@@ -176,7 +176,6 @@ def stat_test(df):
     return
 
 def main():
-    st.write(data_med_ncr)
     ncr_visualization = st.checkbox('Visualize ncr data')
     if ncr_visualization:
         ncr_all_violin=plt.figure()

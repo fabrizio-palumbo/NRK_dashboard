@@ -7,7 +7,6 @@ import seaborn as sns
 import plotly.express as px
 import numpy as np
 import os
-import geo_plot as gp
 from matplotlib import cm, colors
 
 cwd = os.getcwd()

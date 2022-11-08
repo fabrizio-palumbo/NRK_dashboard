@@ -60,7 +60,7 @@ def stat_test(df):
             st.write(df.columns[col], "-", df.columns[col+1],'Different distribution (reject H0)')
     paired_data=df[["2019","2020","2021"]].dropna(axis=0, how="any")
     for col in range(0, len(paired_data.columns)-1):
-        stat, p =wilcoxon(paired_data.iloc[:,0],paired_data.iloc[:,1],zero_method="pratt",alternative="less")
+        stat, p =wilcoxon(paired_data.iloc[:,col],paired_data.iloc[:,col+1],zero_method="pratt",alternative="less")
         alpha = 0.1
         if p > alpha:
             st.write(paired_data.columns[col], "-", paired_data.columns[col+1], 'Same distribution (fail to reject H0), Paired test' , "p=", p)

@@ -97,21 +97,7 @@ def cluster_corr_data(data, num_of_clusters,metod,name_variable, fig_size=(8,6),
         list_index.index.name="komnr"
         list_index.columns=["Cluster #"]
     return index,list_index,col_clust,traces_zscored,row_colors1
-list_variables={ "Education Ratio":data_education,
-"Stilstor":data_stilstor,
-"Timar i uka":data_timar_i_uke,
-"Timar i uka 67+":data_timar_i_uke_67plus,
-"Åarsvekt per user":data_arsvekt_per_user,
-"heltid":data_heltid,
-"Vakter":data_vakter.divide(data_users),
-"Lonnn":data_lonn.divide(data_users),
-"User over 67":data_users_over_67.divide(data_users),
-"Plass avaiable": data_plass_list ,
-"Users total":data_users,
-"All ncr":data_all_ncr.divide(data_users),
-"Med ncr":data_med_ncr.divide(data_users)}
-years_list=["2020"]
-#Line graph function based on komune code
+
 
 def main():   
     variable_name = st.selectbox('Select the variable of interest',options= [k for k in list_variables.keys()])     

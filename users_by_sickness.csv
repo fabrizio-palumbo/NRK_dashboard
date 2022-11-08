@@ -818,62 +818,6 @@
 816,1875,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 0-66 år (antall)",,,,,,47.0,76.0
 817,1875,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 67 år og over (antall)",,,,,,55.0,69.0
 818,1875,"Hjemmetjenestebrukere, omfattende bistandsbehov, 67 år og over (antall)",,,,,,15.0,16.0
-819,2111, +47 409 02 546,,,,,,,
-820,2111,. = Ikke mulig å oppgi tall. Tall finnes ikke på dette tidspunktet fordi kategorien ikke var i bruk da tallene ble samlet inn.,,,,,,,
-821,2111,.. = Tallgrunnlag mangler. Tall er ikke kommet inn i våre databaser eller er for usikre til å publiseres.,,,,,,,
-822,2111,1.1.2020 ble kommunen 5030 Klæbu innlemmet i 5001 Trondheim.,,,,,,,
-823,2111,1.1.2020 ble kommunene 1141 Finnøy og 1142 Rennesøy innlemmet i 1103 Stavanger.,,,,,,,
-824,2111,20220628 08:00,,,,,,,
-825,2111,31.12,,,,,,,
-826,2111,<a href='https://www.ssb.no/offentlig-sektor/kommunekatalog/endringer-i-de-regionale-inndelingene' target='footnote'><b>Se liste over endringer i de regionale inndelingene.</b></a>,,,,,,,
-827,2111,Copyright,,,,,,,
-828,2111,"Dag Ragnvald Abrahamsen, Statistisk sentralbyrå",,,,,,,
-829,2111,Database:,,,,,,,
-830,2111,Ekstern PRODUKSJON,,,,,,,
-831,2111,Forløp (periodesum),,,,,,,
-832,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov  80 år og over (antall)",,,,,,,
-833,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov  80 år og over (antall):",,,,,,,
-834,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  0-66 år (antall)",,,,,,,
-835,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  0-66 år (antall):",,,,,,,
-836,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  67-79 år (antall)",,,,,,,
-837,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  67-79 år (antall):",,,,,,,
-838,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  i alt (antall)",,,,,,,
-839,2111,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  i alt (antall):",,,,,,,
-840,2111,"Hjemmetjenestebrukere, middels bistandsbehov, 0-66 år (antall)",,,,,,,
-841,2111,"Hjemmetjenestebrukere, middels bistandsbehov, 0-66 år (antall):",,,,,,,
-842,2111,"Hjemmetjenestebrukere, middels bistandsbehov, 67 år og over (antall)",,,,,,,
-843,2111,"Hjemmetjenestebrukere, middels bistandsbehov, 67 år og over (antall):",,,,,,,
-844,2111,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 0-66 år (antall)",,,,,,,
-845,2111,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 0-66 år (antall):",,,,,,,
-846,2111,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 67 år og over (antall)",,,,,,,
-847,2111,"Hjemmetjenestebrukere, noe/avgrenset bistandsbehov, 67 år og over (antall):",,,,,,,
-848,2111,"Hjemmetjenestebrukere, omfattende bistandsbehov, 67 år og over (antall)",,,,,,,
-849,2111,"Hjemmetjenestebrukere, omfattende bistandsbehov, 67 år og over (antall):",,,,,,,
-850,2111,Intern referansekode:,,,,,,,
-851,2111,KOShjelptkjernet0000,,,,,,,
-852,2111,Kilde:,,,,,,,
-853,2111,Kontakt:,,,,,,,
-854,2111,Måleenhet:,,,,,,,
-855,2111,Målemetode:,,,,,,,
-856,2111,Referansetid:,,,,,,,
-857,2111,Sist endret:,,,,,,,
-858,2111,Statistisk sentralbyrå,,,,,,,
-859,2111,Stavanger:,,,,,,,
-860,2111,"Tala for årgang 2021 blei retta 28. juni 2022.
-<br> <br>
-1) SSB har gjort en større revisjon av kommunegrupperingen som brukes i KOSTRA fra og med 2020. Det er fortsatt folketall, bundne kostnader og frie inntekter som brukes som kriterier, men inndelingen er noe endret, og nummereringen er ny. Dette er beskrevet i <a href='https://www.ssb.no/offentlig-sektor/artikler-og-publikasjoner/gruppering-av-kommuner-etter-folkemengde-og-okonomiske-rammebetingelser-2020/'>Endring av KOSTRA-grupper fra og med 2020</a>.
-<br> <br>
-2) Brukerdata (IPLOS), endringer fra 2018 til 2019: Innføring av <a href='https://www.helsedirektoratet.no/tema/statistikk-registre-og-rapporter/helsedata-og-helseregistre/kommunalt-pasient-og-brukerregister-kpr/rapportere-data-til-kpr/'>ny IPLOS-versjon</a>  har ført til mangelfulle registeringer i enkelte kommuner, som kan medføre utslag i tall for enkelttjenester og grupperinger av tjenester i publiseringen. <br>
-Se forøvrig:<br>
-<a href='https://www.ssb.no/helse/metoder-og-dokumentasjon/sjukeheimar-heimetenester-og-andre-omsorgstenester-argangsspesifikke-bemerkninger'>Sjukeheimar, heimetenester og andre omsorgstenester - årgangsspesifikke bemerkninger</a> 
-<br><a href='https://www.ssb.no/helse/metoder-og-dokumentasjon/om-statistikkbanktabellene-for-sjukeheimar-heimetenester-og-andre-omsorgstenester'>Om statistikkbanktabellene for Sjukeheimar, heimetenester og andre omsorgstenester</a> 
-<br>Datakilde: Helsedirektoratets IPLOS-KPR-register.
-<br> <br>
-3)  Avtalte årsverk:<br>Tall for 2015-2020 ble oppdatert med ny beregningsmetode i mars 2022. Dette gir kun små utslag for helse- og omsorgstallene.",,,,,,,
-861,2111,Trondheim:,,,,,,,
-862,2111,antall,,,,,,,
-863,2111,dra@ssb.no,,,,,,,
-864,2111,region:,,,,,,,
 865,3001,"Hjemmetjenestebrukere,  omfattende bistandsbehov  80 år og over (antall)",88.0,99.0,105.0,94.0,53.0,50.0,57.0
 866,3001,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  0-66 år (antall)",120.0,121.0,118.0,116.0,127.0,116.0,138.0
 867,3001,"Hjemmetjenestebrukere,  omfattende bistandsbehov,  67-79 år (antall)",36.0,40.0,35.0,38.0,27.0,26.0,24.0

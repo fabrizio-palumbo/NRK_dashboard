@@ -109,7 +109,6 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-
 list_variables={ "Education Ratio":data_education,
 "Education %":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
@@ -119,17 +118,17 @@ list_variables={ "Education Ratio":data_education,
 "Timar i uka 67+":data_timar_i_uke_67plus,
 "Åarsvekt per user":data_arsvekt_per_user,
 "heltid":data_heltid,
-"Vakter":data_vakter.divide(data_users),
+"Vakter":data_vakter.divide(data_users).dropna(axis=1, how="all"),
 "Lonn":data_lonn.divide(data_users).dropna(axis=1, how="all"),
 "User over 67":data_users_over_67.divide(data_users),
 "Plass avaiable": data_plass_list ,
 "Users total":data_users,
 "All ncr":data_all_ncr.divide(data_users),
 "Med ncr":data_med_ncr.divide(data_users)}
+if 'variables' not in st.session_state:
+    st.session_state['variables'] = list_variables
+
 years_list=["2020","2021","2019"]
-
-#Line graph function based on komune code
-
 
 def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
@@ -160,10 +159,6 @@ def main():
                 stat_test(data_med_ncr_norm)
                 st.write("NCR Total statistical test across years")
                 stat_test(data_all_ncr_norm)
-        
-       
-
-        
     agreeKPR = st.checkbox('Visualize Kpr data')
     if agreeKPR:
         data_kpr["aar"]=data_kpr["aar"].astype(str)
@@ -179,7 +174,8 @@ def main():
         kpr=data_kpr.query(" `funksjonstype - tekst` in @options_kpr and aar==@year_selected and `tjenestetype - tekst`==@type_selected")
         kpr=kpr.groupby(by=['kommunenummer','aar'], axis=0, level=None, as_index=False, sort=False,dropna=True).mean()
         list_variables.update({"KPR": kpr.pivot(index="kommunenummer", columns="aar", values="mean_value")})
-   
+        st.session_state.variables = list_variables
+
     Display_earnering = st.checkbox('Visualize Earnering data:')
     if Display_earnering :
         data_earnering["Tidsperiode"]=data_earnering["Tidsperiode"].astype(str)
@@ -190,8 +186,8 @@ def main():
         earnering=data_earnering.query("Måltall== @earnering_variable")
         # st.write(earnering["komnr"])
         earnering=earnering.pivot(index="komnr", columns="Tidsperiode", values="Verdi")
-        
         list_variables.update({"Earnering": earnering})
+        st.session_state.variables = list_variables
         #list_variables.update({"Earnering": earnering2021})
     
     st.write("Correlation analysis")

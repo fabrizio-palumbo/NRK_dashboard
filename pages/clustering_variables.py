@@ -47,7 +47,7 @@ data_arsvekt_per_user = pd.read_csv(db_folder+ 'Årsvekt_per_user.csv',encoding=
 data_education = pd.read_csv(db_folder+ 'education_level.csv', encoding='latin-1', index_col='komnr')
 data_befolkning_69 = pd.read_csv(db_folder+ 'befolkning_69.csv',encoding='latin-1',index_col='komnr')
 data_heltid = pd.read_csv(db_folder+ 'heltid.csv',encoding='latin-1',index_col=0)
-data_årsvekt = pd.read_csv(db_folder+ 'Årsvekt.csv',encoding='latin-1',index_col=0)
+data_årsvekt = pd.read_csv(db_folder+ 'årsvekt.csv',encoding='latin-1',index_col=0)
 data_lonn = pd.read_csv(db_folder+ 'lonn.csv',encoding='latin-1',index_col=0)
 # data_lonn.index = data_lonn.index.map(str)
 data_plass_list = pd.read_csv(db_folder+ 'plass_list.csv',encoding='latin-1',index_col=0)

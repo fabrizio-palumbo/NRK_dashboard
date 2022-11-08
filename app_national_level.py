@@ -215,27 +215,32 @@ def main():
             st.write("Correlation analysis of mean per Kostra Group")
             dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).mean()
             plot_correlation_matrix(dataset_Kostra,"spearman")
-   
-    st.write("select varable of interest to further visualize")
-    options = st.multiselect(
-    "select varable of interest to further visualize",
-    list_variables.keys(),
-    ["Med ncr","Åarsvekt per user"])
-    agree = st.checkbox('Remove oslo')
-    if agree:
-        fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
-    else:
-        fig_pairplot=sns.pairplot(dataset_Kostra[options])
-    st.pyplot(fig_pairplot)
-    label_quartiles_ncr_med=quartile_dataset(dataset[dataset["Users total"]>49]["Med ncr"].dropna())    
-    P_data=pd.concat([dataset[options],label_quartiles_ncr_med],axis=1)
-    list_quartiles= st.multiselect(
-    "select varable of interest to further visualize",
-    [0,1,2,3],
-    [0,3])
-    P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
-    g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
-    st.pyplot(g)
+    
+    pairplot_container = st.container()
+    col1pair, col2pair = st.columns([4,4])
+    with pairplot_container:
+        with col1pair:     
+            options = st.multiselect(
+            "select variable of interest to further visualize",
+            list_variables.keys(),
+            ["Med ncr","Åarsvekt per user"])
+            agree = st.checkbox('Remove oslo')
+            
+            if agree:
+                fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
+            else:
+                fig_pairplot=sns.pairplot(dataset_Kostra[options])
+            st.pyplot(fig_pairplot)
+        with col2pair:
+            label_quartiles_ncr_med=quartile_dataset(dataset[dataset["Users total"]>49]["Med ncr"].dropna())    
+            P_data=pd.concat([dataset[options],label_quartiles_ncr_med],axis=1)
+            list_quartiles= st.multiselect(
+            "select quartile of interest to visualize",
+            [0,1,2,3],
+            [0,3])
+            P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
+            g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
+            st.pyplot(g)
     return
 
 

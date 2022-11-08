@@ -48,7 +48,7 @@ def main():
                 dataset[var]=to_append
             except Exception as error:
                 st.write("variable ", var, "missing for year ", year_selected)
-    dataset[variable_regressor]=list_variables[ variable_regressor][year_selected].dropna()
+    dataset[variable_regressor]=list_variables[ variable_regressor][year_selected].replace(0, np.nan).dropna()
     dataset=dataset.dropna()
     Xx=dataset.iloc[:,:-1]
     Yy=dataset.iloc[:,-1]
@@ -63,7 +63,7 @@ def main():
     ax.scatter(yhat, y)
     line_fit = sm.OLS(y, sm.add_constant(yhat, prepend=True)).fit()
     sm.graphics.abline_plot(model_results=line_fit, ax=ax)
-    st.write(res.aic)
+    #st.write(res.aic)
     ax.set_title('Model Fit Plot')
     ax.set_ylabel('Observed values')
     ax.set_xlabel('Fitted values')

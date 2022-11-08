@@ -13,6 +13,7 @@ cwd = os.getcwd()
 db_folder=cwd+"/database/"
 #import dataset form main page
 
+list_variables=st.session_state.variables 
 
 
 

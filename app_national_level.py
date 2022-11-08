@@ -53,7 +53,7 @@ def stat_test(df):
     for col in range(0, len(df.columns)-1):
         stat, p =mannwhitneyu(df.iloc[:,col].dropna(),df.iloc[:,col+1].dropna())
         # interpret
-        alpha = 0.05
+        alpha = 0.1
         if p > alpha:
             st.write(df.columns[col], "-", df.columns[col+1], 'Same distribution (fail to reject H0)')
         else:
@@ -61,7 +61,7 @@ def stat_test(df):
     paired_data=df[["2019","2020","2021"]].dropna(axis=0, how="any")
     for col in range(0, len(paired_data.columns)-1):
         stat, p =wilcoxon(paired_data.iloc[:,0],paired_data.iloc[:,1],zero_method="pratt",alternative="less")
-        alpha = 0.05
+        alpha = 0.1
         if p > alpha:
             st.write(paired_data.columns[col], "-", paired_data.columns[col+1], 'Same distribution (fail to reject H0), Paired test' , "p=", p)
         else:
@@ -136,7 +136,7 @@ def main():
         ncr_all_violin=plt.figure()
         data_med_ncr_norm=list_variables["Med ncr"]
         data_all_ncr_norm=list_variables["All ncr"]
-
+        st.write(data_med_ncr_norm.columns)
         df_long_all=pd.wide_to_long(data_all_ncr_norm.reset_index(), stubnames='', i="komnr", j='year').reset_index().dropna()
         df_long_all.columns=["komnr","year","Ncr_ratio"]
         df_long_all["type"]="Total"
@@ -149,7 +149,7 @@ def main():
         merged_long_df=merged_long_df.query("Ncr_ratio.notna() and year in @years_list ", engine="python")
         #st.write(merged_long_df)
         sns.boxplot(data=merged_long_df,x="year",y="Ncr_ratio",hue="type")#,split=True,inner="quart", linewidth=1,cut=0  )
-        #plt.ylim([0,1])
+        plt.ylim([0,2])
         title_container = st.container()
         col1, col2 = st.columns([4,2])
         with title_container:

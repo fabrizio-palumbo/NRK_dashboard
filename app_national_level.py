@@ -9,14 +9,19 @@ import seaborn as sns
 import plotly.express as px
 import numpy as np
 import os
-import geo_plot as gp
 from matplotlib import cm, colors
 
 cwd = os.getcwd()
 db_folder=cwd+"/database/"
 
 import json as js
-import geopandas as gp
+
+
+def plot_correlation_matrix(df2,type):
+    fig=plt.figure(figsize=(8,6))
+    sns.heatmap(df2.corr(type),cmap='RdBu_r',annot=False,vmin=-1, vmax=1)
+    st.pyplot(fig)
+    return
 def loadMap(jsonMap):
     KommuneMap=js.load(jsonMap)
     KommuneCoordinates=pd.DataFrame(gp.GeoDataFrame.from_features(KommuneMap["features"]));
@@ -28,7 +33,6 @@ def orderData(reference, df):
     reference=pd.DataFrame(reference)
     R=reference.merge(df.reset_index(),'inner')
     return R
-
 def plotMap(data, ref, axis, color_mapping, **kwargs):
     A=orderData(ref,data)
     gp.GeoDataFrame(A).plot(A.columns[-1], cmap=color_mapping,ax=axis, 
@@ -44,6 +48,25 @@ def quartile_dataset(df):
     # L.index = L.index.map(str)
     print(df)
     return L
+def stat_test(df):
+    from scipy.stats import mannwhitneyu, wilcoxon
+    for col in range(0, len(df.columns)-1):
+        stat, p =mannwhitneyu(df.iloc[:,col].dropna(),df.iloc[:,col+1].dropna())
+        # interpret
+        alpha = 0.05
+        if p > alpha:
+            st.write(df.columns[col], "-", df.columns[col+1], 'Same distribution (fail to reject H0)')
+        else:
+            st.write(df.columns[col], "-", df.columns[col+1],'Different distribution (reject H0)')
+    paired_data=df[["2019","2020","2021"]].dropna(axis=0, how="any")
+    for col in range(0, len(paired_data.columns)-1):
+        stat, p =wilcoxon(paired_data.iloc[:,0],paired_data.iloc[:,1],zero_method="pratt",alternative="less")
+        alpha = 0.05
+        if p > alpha:
+            st.write(paired_data.columns[col], "-", paired_data.columns[col+1], 'Same distribution (fail to reject H0), Paired test' , "p=", p)
+        else:
+            st.write(paired_data.columns[col], "-", paired_data.columns[col+1],'Different distribution (reject H0), Paired test ' , "p=", p)
+    return
 #Loading the dataset
 data_komune_code = pd.read_csv(db_folder+ 'Komune_Kode.csv',encoding='latin-1')
 data_arsvekt_per_user = pd.read_csv(db_folder+ 'Årsvekt_per_user.csv',encoding='latin-1',index_col=0)
@@ -86,56 +109,7 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-jsonMap_of_norway=open(db_folder+ "kommuner2021.json");
-norwayMap= loadMap(jsonMap_of_norway)
-norwayMap= norwayMap.rename(columns={"Kommunenummer": "komnr"})
-kommuneMap=(norwayMap["komnr"])
 
-def cluster_corr_data(data, num_of_clusters,metod,name_variable, fig_size=(8,6), heatmap_plot=False):
-    from scipy.stats import zscore
-    data=data.dropna(axis=0,how="all").dropna(axis=1,how="all")#.replace('.',0).replace(np.nan, 0).astype(int)
-    corrMatrix=data.T.corr()
-    # st.write(data)
-    cg = sns.clustermap(corrMatrix.replace(np.nan, 0),cmap ="YlGnBu",method=metod);
-    cluster_link=cg.dendrogram_col.linkage
-    from scipy.cluster import hierarchy
-    clust_num=hierarchy.cut_tree(cluster_link, num_of_clusters)
-    lut1 = dict(zip(np.unique(clust_num), sns.hls_palette(len(np.unique(clust_num)), l=0.5, s=0.8)))
-    row_colors1 = pd.DataFrame(clust_num)[0].map(lut1)
-    if(heatmap_plot):
-        cg2=sns.clustermap(corrMatrix.replace(np.nan, 0).reset_index(drop=True),cmap ="coolwarm",method=metod,
-        row_colors=row_colors1,yticklabels=False, xticklabels=False, robust=True,dendrogram_ratio=(0.15,0),figsize=fig_size)
-        st.pyplot(cg2)
-    label=[]
-    fig, axs = plt.subplots(1, sharex=True,figsize=fig_size)
-    index=[]
-    traces_zscored=[]
-    col_clust=pd.DataFrame(list(range(0,num_of_clusters)))[0].map(lut1)
-    for n in range(0,num_of_clusters):
-        kom_data=data.iloc[np.where(clust_num==n)[0]]
-        index.append([kom_data.index])
-        kom_zscore=kom_data.apply(zscore,axis=1)
-        kom_mean= kom_zscore.mean(axis=0)
-        label.append("cluster number: " + str(n))
-        kom_mean.plot(color = col_clust[n], ax=axs)
-        traces_zscored.append(kom_mean)
-        axs.legend(label)
-        t=axs.set_title("z-scored traces averaged")
-        plt.setp(t, color='w')    
-        traces_zscored.append(kom_mean)
-    st.pyplot(fig)
-    cl_n=clust_num[:,0]
-    d_out = {name_variable : pd.Series(cl_n,
-                       index =data.index)}
-    list_index=pd.DataFrame(d_out)
-    list_index.index.name="komnr"
-    list_index.columns=["Cluster #"]
-    return index,list_index,col_clust,traces_zscored,row_colors1
-def plot_correlation_matrix(df2,type):
-    fig=plt.figure(figsize=(8,6))
-    sns.heatmap(df2.corr(type),cmap='RdBu_r',annot=False,vmin=-1, vmax=1)
-    st.pyplot(fig)
-    return
 list_variables={ "Education Ratio":data_education,
 "Education %":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
@@ -155,25 +129,7 @@ list_variables={ "Education Ratio":data_education,
 years_list=["2020","2021","2019"]
 
 #Line graph function based on komune code
-def stat_test(df):
-    from scipy.stats import mannwhitneyu, wilcoxon
-    for col in range(0, len(df.columns)-1):
-        stat, p =mannwhitneyu(df.iloc[:,col].dropna(),df.iloc[:,col+1].dropna())
-        # interpret
-        alpha = 0.05
-        if p > alpha:
-            st.write(df.columns[col], "-", df.columns[col+1], 'Same distribution (fail to reject H0)')
-        else:
-            st.write(df.columns[col], "-", df.columns[col+1],'Different distribution (reject H0)')
-    paired_data=df[["2019","2020","2021"]].dropna(axis=0, how="any")
-    for col in range(0, len(paired_data.columns)-1):
-        stat, p =wilcoxon(paired_data.iloc[:,0],paired_data.iloc[:,1],zero_method="pratt",alternative="less")
-        alpha = 0.05
-        if p > alpha:
-            st.write(paired_data.columns[col], "-", paired_data.columns[col+1], 'Same distribution (fail to reject H0), Paired test' , "p=", p)
-        else:
-            st.write(paired_data.columns[col], "-", paired_data.columns[col+1],'Different distribution (reject H0), Paired test ' , "p=", p)
-    return
+
 
 def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
@@ -208,8 +164,8 @@ def main():
        
 
         
-    agree = st.checkbox('Visualize Kpr data')
-    if agree:
+    agreeKPR = st.checkbox('Visualize Kpr data')
+    if agreeKPR:
         data_kpr["aar"]=data_kpr["aar"].astype(str)
         year_selected = st.selectbox('Please select the year of interest',options= set(data_kpr["aar"]))
         
@@ -252,10 +208,18 @@ def main():
 
     dataset["kostragr"]=data_kostra.kostragr.astype(int)
     dataset_corr=dataset.iloc[:,:-1]
-    plot_correlation_matrix(dataset_corr,"spearman")
-    st.write("Correlation analysis of mean per Kostra Group")
-    dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).mean()
-    plot_correlation_matrix(dataset_Kostra,"spearman")
+
+    corr_container = st.container()
+    col1corr, col2corr = st.columns([4,4])
+    with corr_container:
+        with col1corr:     
+            st.write("Correlation analysis of all kommuner together")
+            plot_correlation_matrix(dataset_corr,"spearman")
+        with col2corr:
+            st.write("Correlation analysis of mean per Kostra Group")
+            dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).mean()
+            plot_correlation_matrix(dataset_Kostra,"spearman")
+   
     st.write("select varable of interest to further visualize")
     options = st.multiselect(
     "select varable of interest to further visualize",

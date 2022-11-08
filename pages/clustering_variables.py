@@ -67,14 +67,14 @@ data_kostra = pd.read_csv(db_folder+ 'kostra_group.csv',encoding='latin-1', inde
 data_all_ncr = pd.read_csv(db_folder+ 'all_ncr.csv',encoding='latin-1',index_col=0)
 data_all_ncr=data_all_ncr.apply(pd.to_numeric, errors='coerce')
 # data_all_ncr["komnr"]=data_all_ncr["komnr"].astype(str)
-data_all_ncr=data_all_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum()
+data_all_ncr=data_all_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)
 
 #data_all_ncr.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
 data_med_ncr = pd.read_csv(db_folder+ 'med_ncr.csv',encoding='latin-1',index_col=0)
 data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
-data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum()#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
+data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
 jsonMap_of_norway=open(db_folder+ "kommuner2021.json");
 norwayMap= loadMap(jsonMap_of_norway)

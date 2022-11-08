@@ -11,6 +11,10 @@ from matplotlib import cm, colors
 # from io import BytesIO
 cwd = os.getcwd()
 db_folder=cwd+"/database/"
+#import dataset form main page
+
+
+
 
 import json as js
 import geopandas as gp
@@ -41,41 +45,6 @@ def quartile_dataset(df):
     # L.index = L.index.map(str)
     #print(df)
     return L
-#Loading the dataset
-data_komune_code = pd.read_csv(db_folder+ 'Komune_Kode.csv',encoding='latin-1')
-data_arsvekt_per_user = pd.read_csv(db_folder+ 'Årsvekt_per_user.csv',encoding='latin-1',index_col=0)
-data_education = pd.read_csv(db_folder+ 'education_level.csv', encoding='latin-1', index_col='komnr')
-data_befolkning_69 = pd.read_csv(db_folder+ 'befolkning_69.csv',encoding='latin-1',index_col='komnr')
-data_heltid = pd.read_csv(db_folder+ 'heltid.csv',encoding='latin-1',index_col=0)
-data_årsvekt = pd.read_csv(db_folder+ 'årsvekt.csv',encoding='latin-1',index_col=0)
-data_lonn = pd.read_csv(db_folder+ 'lonn.csv',encoding='latin-1',index_col=0)
-# data_lonn.index = data_lonn.index.map(str)
-data_plass_list = pd.read_csv(db_folder+ 'plass_list.csv',encoding='latin-1',index_col=0)
-data_stilstor = pd.read_csv(db_folder+ 'stilstor.csv',encoding='latin-1',index_col=0)
-
-data_timar_i_uke = pd.read_csv(db_folder+ 'timar_i_uka.csv',encoding='latin-1',index_col='komnr')
-data_timar_i_uke.index = data_timar_i_uke.index.map(int)
-data_timar_i_uke_67plus = pd.read_csv(db_folder+ 'timar_i_uka_67plus.csv',encoding='latin-1',index_col='komnr')
-data_timar_i_uke_67plus.index = data_timar_i_uke_67plus.index.map(int)
-
-
-data_users = pd.read_csv(db_folder+ 'users.csv',encoding='latin-1',index_col='komnr')
-data_users_over_67 = pd.read_csv(db_folder+ 'users_over_67.csv',encoding='latin-1',index_col=0)
-data_vakter = pd.read_csv(db_folder+ 'vakter.csv',encoding='latin-1',index_col='komnr')
-data_kostra = pd.read_csv(db_folder+ 'kostra_group.csv',encoding='latin-1', index_col='komnr')
-# data_kostra.index = data_kostra.index.map(str)
-data_all_ncr = pd.read_csv(db_folder+ 'all_ncr.csv',encoding='latin-1',index_col=0)
-data_all_ncr=data_all_ncr.apply(pd.to_numeric, errors='coerce')
-# data_all_ncr["komnr"]=data_all_ncr["komnr"].astype(str)
-data_all_ncr=data_all_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)
-
-#data_all_ncr.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
-
-data_med_ncr = pd.read_csv(db_folder+ 'med_NCR.csv',encoding='latin-1',index_col=0)
-data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
-# data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
-data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
-
 jsonMap_of_norway=open(db_folder+ "kommuner2021.json");
 norwayMap= loadMap(jsonMap_of_norway)
 norwayMap= norwayMap.rename(columns={"Kommunenummer": "komnr"})

@@ -136,7 +136,6 @@ def main():
         ncr_all_violin=plt.figure()
         data_med_ncr_norm=list_variables["Med ncr"]
         data_all_ncr_norm=list_variables["All ncr"]
-        st.write(data_med_ncr_norm.columns)
         df_long_all=pd.wide_to_long(data_all_ncr_norm.reset_index(), stubnames='', i="komnr", j='year').reset_index().dropna()
         df_long_all.columns=["komnr","year","Ncr_ratio"]
         df_long_all["type"]="Total"

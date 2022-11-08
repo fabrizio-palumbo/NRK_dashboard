@@ -134,8 +134,9 @@ def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
     if ncr_visualization:
         ncr_all_violin=plt.figure()
-        data_all_ncr_norm=data_all_ncr.divide(data_users)
-        data_med_ncr_norm=data_med_ncr.divide(data_users)
+        data_med_ncr_norm=list_variables["Med ncr"]
+        data_all_ncr_norm=list_variables["All ncr"]
+
         df_long_all=pd.wide_to_long(data_all_ncr_norm.reset_index(), stubnames='', i="komnr", j='year').reset_index().dropna()
         df_long_all.columns=["komnr","year","Ncr_ratio"]
         df_long_all["type"]="Total"

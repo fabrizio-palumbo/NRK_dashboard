@@ -51,16 +51,19 @@ def quartile_dataset(df):
 def stat_test(df):
     from scipy.stats import mannwhitneyu, wilcoxon
     for col in range(0, len(df.columns)-1):
-        stat, p =mannwhitneyu(df.iloc[:,col].dropna(),df.iloc[:,col+1].dropna())
+        col1=df.columns[col]
+        col2=df.columns[col+1]
+        stat, p =mannwhitneyu(df[col1].dropna(),df[col2].dropna(),alternative= "less") 
+        ranksums
         # interpret
         alpha = 0.1
         if p > alpha:
-            st.write(df.columns[col], "-", df.columns[col+1], 'Same distribution (fail to reject H0)')
+            st.write(df.columns[col], "-", df.columns[col+1], 'Same distribution (fail to reject H0), p', p)
         else:
-            st.write(df.columns[col], "-", df.columns[col+1],'Different distribution (reject H0)')
+            st.write(df.columns[col], "-", df.columns[col+1],'Different distribution (reject H0), p', p)
     paired_data=df[["2019","2020","2021"]].dropna(axis=0, how="any")
     for col in range(0, len(paired_data.columns)-1):
-        stat, p =wilcoxon(paired_data.iloc[:,col],paired_data.iloc[:,col+1],zero_method="pratt",alternative="less")
+        stat, p =wilcoxon(paired_data.iloc[:,col],paired_data.iloc[:,col+1],alternative="less")
         alpha = 0.1
         if p > alpha:
             st.write(paired_data.columns[col], "-", paired_data.columns[col+1], 'Same distribution (fail to reject H0), Paired test' , "p=", p)
@@ -74,7 +77,9 @@ data_education = pd.read_csv(db_folder+ 'education_level.csv', encoding='latin-1
 data_ed_percentage = pd.read_csv(db_folder+ 'education_percentage.csv', encoding='latin-1', index_col='komnr')
 data_educationH= pd.read_csv(db_folder+ 'education_High.csv', encoding='latin-1', index_col='komnr')
 data_educationL = pd.read_csv(db_folder+ 'education_low.csv', encoding='latin-1', index_col='komnr')
-
+data_users_very_sick = pd.read_csv(db_folder+ 'users_very_sick.csv',encoding='utf-8',index_col='komnr')
+st.write(data_users_very_sick.columns)
+#data_users_very_sick.index=data_users_very_sick.index.map(int)
 data_earnering=pd.read_csv(db_folder+ 'earnering.csv',encoding='utf-8')
 data_befolkning_69 = pd.read_csv(db_folder+ 'befolkning_69.csv',encoding='latin-1',index_col='komnr')
 data_heltid = pd.read_csv(db_folder+ 'heltid.csv',encoding='latin-1',index_col=0)
@@ -123,6 +128,7 @@ list_variables={ "Education Ratio":data_education,
 "User over 67":data_users_over_67.divide(data_users),
 "Plass avaiable": data_plass_list ,
 "Users total":data_users,
+"Users very sick": data_users_very_sick,
 "All ncr":data_all_ncr.divide(data_users),
 "Med ncr":data_med_ncr.divide(data_users)}
 if 'variables' not in st.session_state:

@@ -11,28 +11,6 @@ from matplotlib import cm, colors
 import statsmodels.api as sm
 from scipy import stats
 
-
-
-# Yy=Yy[:,np.newaxis]
-# glm_binom = sm.GLM(Yy,Xx,family=sm.families.Poisson(link=sm.families.links.log()))#family=sm.families.Poisson(link=sm.families.links.log()))
-# #family=sm.families.Gamma(link=sm.families.links.log()))
-# # #family = Gamma(link="log")
-# # #family=sm.families.Poisson(link=sm.families.links.log())family=sm.families.Binomial()
-# res = glm_binom.fit(method="lbfgs")
-# print(res.summary())
-# nobs = res.nobs
-# y =(Yy)
-# yhat = res.mu
-# fig, ax = plt.subplots()
-# ax.scatter(yhat, y)
-# line_fit = sm.OLS(y, sm.add_constant(yhat, prepend=True)).fit()
-# sm.graphics.abline_plot(model_results=line_fit, ax=ax)
-# print(res.aic)
-
-# ax.set_title('Model Fit Plot')
-# ax.set_ylabel('Observed values')
-# ax.set_xlabel('Fitted values')
-
 list_variables=st.session_state.variables 
 years_list=["2020","2021","2019"]
 def main():   
@@ -100,6 +78,24 @@ def main():
             st.pyplot(fig3)
         with col4:
             st.pyplot(fig4)
+    st.write("Tsne  Test")
+
+    from sklearn.manifold import TSNE
+    test_tsne=dataset
+    tsne = TSNE(  n_components= 2, n_iter=25000, n_iter_without_progress=50000,  perplexity=10 )#
+    tsne_results = tsne.fit_transform(test_tsne)
+    from sklearn.cluster import DBSCAN
+    clustering = DBSCAN(eps=20, min_samples=2).fit(tsne_results)
+    df_subset=pd.DataFrame()
+    df_subset['tsne-2d-one'] = tsne_results[:,0]
+    df_subset['tsne-2d-two'] = tsne_results[:,1]
+    df_subset['label']=Yy
+    fig=plt.figure(figsize=(16,10))
+    #plt.hist(np.log10(Yy))
+    plt.scatter(x= tsne_results[:,0],y= tsne_results[:,1], c=np.log(Yy),cmap="hot" )#,vmin=-1, vmax=1
+    plt.colorbar()
+    st.pyplot(fig)
+    
     return
 
 

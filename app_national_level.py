@@ -113,8 +113,8 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-list_variables={ "Education Ratio":data_education,
-"Education %":data_ed_percentage,
+list_variables={ "Education Ratio (H/L)":data_education,
+"% High educated nurses":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
 "Education Low":data_educationL.divide(data_users),
 "Stilstor":data_stilstor,
@@ -133,12 +133,12 @@ list_variables={ "Education Ratio":data_education,
 if 'variables' not in st.session_state:
     st.session_state['variables'] = list_variables
 
-years_list=["2020","2021","2019"]
+years_list=["2016","2017","2018","2020","2021","2019"]
 
 def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
     if ncr_visualization:
-        ncr_all_violin=plt.figure()
+        ncr_all_boxplot=plt.figure()
         data_med_ncr_norm=list_variables["Med ncr"]
         data_all_ncr_norm=list_variables["All ncr"]
         df_long_all=pd.wide_to_long(data_all_ncr_norm.reset_index(), stubnames='', i="komnr", j='year').reset_index().dropna()
@@ -150,20 +150,30 @@ def main():
         df_long_med["year"]=df_long_med["year"].astype(str)
         df_long_med["type"]="Medicine"
         merged_long_df=pd.concat([df_long_med,df_long_all], axis=0)
-        merged_long_df=merged_long_df.query("Ncr_ratio.notna() and year in @years_list ", engine="python")
-        #st.write(merged_long_df)
+        merged_long_df=merged_long_df.query("Ncr_ratio.notna() and year in @years_list ", engine="python").reset_index()
         sns.boxplot(data=merged_long_df,x="year",y="Ncr_ratio",hue="type")#,split=True,inner="quart", linewidth=1,cut=0  )
         plt.ylim([0,2])
+        ncr_all_ci=plt.figure()
+        sns.lineplot( data=merged_long_df.query("type=='Total'"),x="year",y="Ncr_ratio",color="g")
+        plt.title("Total number of NCR")
+        ncr_med_ci=plt.figure()
+        sns.lineplot( data=merged_long_df.query("type=='Medicine'"),x="year",y="Ncr_ratio",color="b")
+        plt.title("Medicine related NCR")
+
+        
         title_container = st.container()
-        col1, col2 = st.columns([4,2])
+        col1, col2 , col3= st.columns([2,2,2])
         with title_container:
             with col1:     
-                st.pyplot(ncr_all_violin)
+                st.pyplot(ncr_all_boxplot)
             with col2:
-                st.write("NCR Medicine statistical test across years")
-                stat_test(data_med_ncr_norm)
-                st.write("NCR Total statistical test across years")
-                stat_test(data_all_ncr_norm)
+                st.pyplot(ncr_all_ci)
+            with col3:
+                st.pyplot(ncr_med_ci)
+                # st.write("NCR Medicine statistical test across years")
+                # stat_test(data_med_ncr_norm)
+                # st.write("NCR Total statistical test across years")
+                # stat_test(data_all_ncr_norm)
     agreeKPR = st.checkbox('Visualize Kpr data')
     if agreeKPR:
         data_kpr["aar"]=data_kpr["aar"].astype(str)

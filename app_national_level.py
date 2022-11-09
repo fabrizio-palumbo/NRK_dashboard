@@ -54,7 +54,7 @@ def stat_test(df):
         col1=df.columns[col]
         col2=df.columns[col+1]
         stat, p =mannwhitneyu(df[col1].dropna(),df[col2].dropna(),alternative= "less") 
-        ranksums
+        #ranksums
         # interpret
         alpha = 0.1
         if p > alpha:
@@ -78,7 +78,6 @@ data_ed_percentage = pd.read_csv(db_folder+ 'education_percentage.csv', encoding
 data_educationH= pd.read_csv(db_folder+ 'education_High.csv', encoding='latin-1', index_col='komnr')
 data_educationL = pd.read_csv(db_folder+ 'education_low.csv', encoding='latin-1', index_col='komnr')
 data_users_very_sick = pd.read_csv(db_folder+ 'users_very_sick.csv',encoding='utf-8',index_col='komnr')
-st.write(data_users_very_sick.columns)
 #data_users_very_sick.index=data_users_very_sick.index.map(int)
 data_earnering=pd.read_csv(db_folder+ 'earnering.csv',encoding='utf-8')
 data_befolkning_69 = pd.read_csv(db_folder+ 'befolkning_69.csv',encoding='latin-1',index_col='komnr')
@@ -210,7 +209,7 @@ def main():
 
     dataset["kostragr"]=data_kostra.kostragr.astype(int)
     dataset_corr=dataset.iloc[:,:-1]
-
+    # st.write(dataset)
     corr_container = st.container()
     col1corr, col2corr = st.columns([4,4])
     with corr_container:

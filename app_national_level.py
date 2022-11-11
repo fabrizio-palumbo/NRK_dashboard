@@ -17,9 +17,27 @@ db_folder=cwd+"/database/"
 import json as js
 
 
-def plot_correlation_matrix(df2,type):
+def plot_correlation_matrix(df2,type,significance=0.1):
     fig=plt.figure(figsize=(8,6))
-    sns.heatmap(df2.corr(type),cmap='RdBu_r',annot=False,vmin=-1, vmax=1)
+    
+    from scipy.stats import pearsonr,spearmanr
+
+    def calculate_pvalues(df):
+        dfcols = pd.DataFrame(columns=df.columns)
+        pvalues = dfcols.transpose().join(dfcols, how='outer')
+        for r in df.columns:
+            for c in df.columns:
+                tmp = df[df[r].notnull() & df[c].notnull()]
+                if type=="pearsonr":
+                    pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
+                else:
+                    if type=="spearman":
+                        pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
+        return pvalues
+
+    p_values = calculate_pvalues(df2)                     # get p-Value
+    mask_sig = np.invert((p_values<significance))    # mask - only get significant corr
+    sns.heatmap(df2.corr(type),mask=mask_sig, cmap='RdBu_r',annot=False,vmin=-1, vmax=1)
     st.pyplot(fig)
     return
 def loadMap(jsonMap):
@@ -41,10 +59,10 @@ def plotMap(data, ref, axis, color_mapping, **kwargs):
     plt.yticks([])
     plt.xticks([])
     return
-def quartile_dataset(df):
+def quartile_dataset(df,n=4):
     print(df)
     L=pd.DataFrame()
-    L["label_quartiles"]= pd.qcut(df,q = 4, labels = False)
+    L["label_quartiles"]= pd.qcut(df,q =n, labels = False)
     # L.index = L.index.map(str)
     print(df)
     return L
@@ -117,7 +135,7 @@ list_variables={ "Education Ratio (H/L)":data_education,
 "% High educated nurses":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
 "Education Low":data_educationL.divide(data_users),
-"Stilstor":data_stilstor,
+"Stillingsstørrelse":data_stilstor,
 "Timar i uka":data_timar_i_uke,
 "Timar i uka 67+":data_timar_i_uke_67plus,
 "Åarsvekt per user":data_arsvekt_per_user,
@@ -206,6 +224,9 @@ def main():
         #list_variables.update({"Earnering": earnering2021})
     
     st.write("Correlation analysis")
+    min_users= st.select_slider(
+    'Select minimum number of patients per kommune',
+    options=list(range(0,100,10)))
     year_selected = st.selectbox('Please select the year of interest',options= years_list)     
     dataset=pd.DataFrame()
     dataset.index.name="komnr"
@@ -219,6 +240,7 @@ def main():
 
     dataset["kostragr"]=data_kostra.kostragr.astype(int)
     dataset_corr=dataset.iloc[:,:-1]
+   
     # st.write(dataset)
     corr_container = st.container()
     col1corr, col2corr = st.columns([4,4])
@@ -227,8 +249,12 @@ def main():
             st.write("Correlation analysis of all kommuner together")
             plot_correlation_matrix(dataset_corr,"spearman")
         with col2corr:
+            q_val= st.multiselect(
+            "select quantile of interest per Kostra group",
+            [0.25,0.5,0.75],
+            [0.75])
             st.write("Correlation analysis of mean per Kostra Group")
-            dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).mean()
+            dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
             plot_correlation_matrix(dataset_Kostra,"spearman")
     
     pairplot_container = st.container()
@@ -240,22 +266,41 @@ def main():
             list_variables.keys(),
             ["Med ncr","Åarsvekt per user"])
             agree = st.checkbox('Remove oslo')
-            
+            url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
+            st.write("Info about Kostra grouping (%s)" % url)
             if agree:
                 fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
             else:
                 fig_pairplot=sns.pairplot(dataset_Kostra[options])
             st.pyplot(fig_pairplot)
+        
+        
         with col2pair:
-            label_quartiles_ncr_med=quartile_dataset(dataset[dataset["Users total"]>49]["Med ncr"].dropna())    
-            P_data=pd.concat([dataset[options],label_quartiles_ncr_med],axis=1)
+            var_quartiles= st.selectbox(
+            "select variable for quartile calculation",
+            dataset.columns[:-1],
+            len(dataset.columns[:-1])-1)
+            n_quartile= st.selectbox(
+            "select number of quantile calculation",
+            range(1,11),
+            3)
+            label_quartiles=quartile_dataset(dataset[dataset["Users total"]>min_users][var_quartiles].dropna(),n_quartile)    
+            P_data=pd.concat([dataset[options],label_quartiles],axis=1)
             list_quartiles= st.multiselect(
             "select quartile of interest to visualize",
-            [0,1,2,3],
-            [0,3])
+            range(0,n_quartile),[0,n_quartile-1]
+            )
             P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
             g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
             st.pyplot(g)
+    var_to_explore= st.selectbox(
+            "select variable for quantile exploration",
+             P_data.columns[:-1],
+            len(P_data.columns[:-1])-1)
+    line_plot=plt.figure()
+    sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")
+    plt.title("")
+    st.pyplot(line_plot)
     return
 
 

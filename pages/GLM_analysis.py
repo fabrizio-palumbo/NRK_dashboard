@@ -17,6 +17,9 @@ def main():
     year_selected = st.selectbox('Please select the year of interest',options= years_list)     
     options= [k for k in list_variables.keys()]
     variable_regressor = st.selectbox('Select 1 variable to regress',options=["All ncr","Med ncr"])     
+    min_users= st.select_slider(
+    'Select minimum number of patients per kommune',
+    options=list(range(0,100,10)))
     variable_to_remove=["Med ncr","All ncr"]
     remove_var = st.checkbox('Remove_variable')
     if remove_var:
@@ -37,6 +40,7 @@ def main():
                 st.write("variable ", var, "missing for year ", year_selected)
     dataset[variable_regressor]=list_variables[ variable_regressor][year_selected].replace(0, np.nan).dropna()
     dataset=dataset.dropna()
+    dataset=dataset.query(" `Users total` > @min_users")
     Xx=dataset.iloc[:,:-1]
     Yy=dataset.iloc[:,-1]
     Yy=Yy[:,np.newaxis]
@@ -108,6 +112,9 @@ def main():
     PCA_visualization = st.checkbox('Visualize PCA')
     if PCA_visualization:
         from sklearn.preprocessing import StandardScaler
+        N_of_pc= st.select_slider(
+        'Select minimum number of patients per kommune',
+        options=list(range(3,len(dataset))))
         # define scaler
         scaler = StandardScaler()
         #create copy of DataFrame
@@ -117,7 +124,7 @@ def main():
         from sklearn.decomposition import PCA
 
         #define PCA model to use
-        pca = PCA(n_components=3)
+        pca = PCA(n_components=N_of_pc)
 
         #fit PCA model to data
         pca_fit = pca.fit_transform(scaled_df)

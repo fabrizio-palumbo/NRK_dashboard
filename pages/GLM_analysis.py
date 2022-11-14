@@ -22,6 +22,10 @@ def main():
     options=list(range(0,100,10)))
     variable_to_remove=["Med ncr","All ncr"]
     remove_var = st.checkbox('Remove_variable')
+    users_selection=pd.DataFrame(list_variables["Users total"][year_selected])
+    #st.write(users_selection)
+
+    index_selected_users=users_selection.query(" `2020` > @min_users").index
     if remove_var:
         variable_selected = st.multiselect(
         "select variable to remove",
@@ -39,8 +43,10 @@ def main():
             except Exception as error:
                 st.write("variable ", var, "missing for year ", year_selected)
     dataset[variable_regressor]=list_variables[ variable_regressor][year_selected].replace(0, np.nan).dropna()
+    #st.write(dataset)
+    index_selected_users=[w for w in index_selected_users if w in dataset.index]
+    dataset=dataset.loc[index_selected_users]
     dataset=dataset.dropna()
-    dataset=dataset.query(" `Users total` > @min_users")
     Xx=dataset.iloc[:,:-1]
     Yy=dataset.iloc[:,-1]
     Yy=Yy[:,np.newaxis]
@@ -113,8 +119,8 @@ def main():
     if PCA_visualization:
         from sklearn.preprocessing import StandardScaler
         N_of_pc= st.select_slider(
-        'Select minimum number of patients per kommune',
-        options=list(range(3,len(dataset))))
+        'Select minimum number of Principal components',
+        options=list(range(2,len(dataset.columns)+1)))
         # define scaler
         scaler = StandardScaler()
         #create copy of DataFrame

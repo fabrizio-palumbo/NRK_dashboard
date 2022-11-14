@@ -131,7 +131,8 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-list_variables={ "Education Ratio (H/L)":data_education,
+list_variables={ "Users total":data_users,
+"Education Ratio (H/L)":data_education,
 "% High educated nurses":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
 "Education Low":data_educationL.divide(data_users),
@@ -144,7 +145,6 @@ list_variables={ "Education Ratio (H/L)":data_education,
 "Lonn":data_lonn.divide(data_users).dropna(axis=1, how="all"),
 "User over 67":data_users_over_67.divide(data_users),
 "Plass avaiable": data_plass_list ,
-"Users total":data_users,
 "Users very sick": data_users_very_sick,
 "All ncr":data_all_ncr.divide(data_users),
 "Med ncr":data_med_ncr.divide(data_users)}
@@ -254,9 +254,8 @@ def main():
             [0.25,0.5,0.75],
             [0.75])
             st.write("Correlation analysis of mean per Kostra Group")
-            st.write("Kostra Groiup 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
+            st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
             dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
-            
             plot_correlation_matrix(dataset_Kostra,"spearman")
     
     pairplot_container = st.container()
@@ -266,7 +265,7 @@ def main():
             options = st.multiselect(
             "select variable of interest to further visualize",
             list_variables.keys(),
-            ["Med ncr","Åarsvekt per user"])
+            ["Med ncr","Stillingsstørrelse"])
             agree = st.checkbox('Remove oslo')
             url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
             st.write("Info about Kostra grouping (%s)" % url)
@@ -276,7 +275,6 @@ def main():
                 fig_pairplot=sns.pairplot(dataset_Kostra[options])
             #st.write(dataset_Kostra)
             st.pyplot(fig_pairplot)
-        
         
         with col2pair:
             var_quartiles= st.selectbox(
@@ -303,7 +301,32 @@ def main():
     line_plot=plt.figure()
     sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")
     plt.title("")
-    st.pyplot(line_plot)
+    data_kostra_raw_index=[]
+    for ind in dataset.index:
+            
+            ref=dataset["kostragr"][ind]
+            if ref !=16:
+                #st.write(ref)
+                ref_val=dataset_Kostra.loc[ref][var_to_explore].item()
+                #st.write(ref_val)
+                value_k=dataset[var_to_explore][ind]
+                #st.write(value_k)
+                if(value_k>=ref_val):  
+                    data_kostra_raw_index.append(ind)
+    data_kostra_raw=dataset.loc[data_kostra_raw_index]
+    pairplot_container = st.container()
+    col1pair, col2pair = st.columns([4,4])
+    with pairplot_container:
+        # with col1pair:
+            # sc=plt.figure()
+            
+            # sns.scatterplot(data=data_kostra_raw,x= options[0], y= options[1])
+           
+
+            # st.pyplot(sc)
+        with col2pair:     
+            st.pyplot(line_plot)
+    
     return
 
 

@@ -185,6 +185,12 @@ def main():
 
 
 
+#     from sklearn.linear_model import Ridge
+#     clf = Ridge(alpha=1.0,	
+# normalize=True )
+#     a=clf.fit(Xx, Yy)
+#     st.write(a.coef_)
+#     st.write(clf.score(Xx,Yy))
 
 
 

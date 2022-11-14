@@ -108,10 +108,16 @@ def main():
     new_cmap = colors.LinearSegmentedColormap.from_list('new_cmap',c,number_of_cluster)
     fig, axis = plt.subplots()
     plotMap(b,norwayMap, axis=axis, color_mapping=new_cmap)
-    st.pyplot(fig)
+    
     # buf = BytesIO()
     # fig.savefig(buf, format="png")
     # st.image(buf,width=100, use_column_width=100)
+    plot_container = st.container()
+    col1, col2 = st.columns([4,4])
+    with plot_container:
+        with col1: 
+                st.pyplot(fig)
+
     return
 
 

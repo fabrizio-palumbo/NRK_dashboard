@@ -254,7 +254,9 @@ def main():
             [0.25,0.5,0.75],
             [0.75])
             st.write("Correlation analysis of mean per Kostra Group")
-            dataset_Kostra=dataset.groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
+            st.write("Kostra Groiup 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
+            dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
+            
             plot_correlation_matrix(dataset_Kostra,"spearman")
     
     pairplot_container = st.container()
@@ -272,6 +274,7 @@ def main():
                 fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
             else:
                 fig_pairplot=sns.pairplot(dataset_Kostra[options])
+            st.write(dataset_Kostra)
             st.pyplot(fig_pairplot)
         
         

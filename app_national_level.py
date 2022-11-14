@@ -274,7 +274,7 @@ def main():
                 fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
             else:
                 fig_pairplot=sns.pairplot(dataset_Kostra[options])
-            st.write(dataset_Kostra)
+            #st.write(dataset_Kostra)
             st.pyplot(fig_pairplot)
         
         

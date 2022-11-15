@@ -24,13 +24,12 @@ def main():
     remove_var = st.checkbox('Remove_variable')
     users_selection=pd.DataFrame(list_variables["Users total"][year_selected])
     #st.write(users_selection)
-
-    index_selected_users=users_selection.query(" `2020` > @min_users").index
+    index_selected_users=users_selection.query("`{0}` >  @min_users".format(year_selected)).index
     if remove_var:
         variable_selected = st.multiselect(
         "select variable to remove",
         list_variables.keys(),
-        list_variables.keys())
+        [])
         #variable_to_remove= st.selectbox('Select variable to remove',options=list_variables.keys())     
         variable_to_remove.extend(variable_selected)
     dataset=pd.DataFrame()

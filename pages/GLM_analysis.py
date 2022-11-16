@@ -25,6 +25,8 @@ def main():
     users_selection=pd.DataFrame(list_variables["Users total"][year_selected])
     #st.write(users_selection)
     index_selected_users=users_selection.query("`{0}` >  @min_users".format(year_selected)).index
+    url = "https://www.mygreatlearning.com/blog/generalized-linear-models/#difference-between-generalized-linear-model-and-general-linear-model"
+    st.write("Info about GLM models (%s)" % url)
     if remove_var:
         variable_selected = st.multiselect(
         "select variable to remove",

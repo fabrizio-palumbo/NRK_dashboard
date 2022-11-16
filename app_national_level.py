@@ -10,6 +10,7 @@ import plotly.express as px
 import numpy as np
 import os
 from matplotlib import cm, colors
+from scipy.stats import mannwhitneyu, wilcoxon
 
 cwd = os.getcwd()
 db_folder=cwd+"/database/"
@@ -67,7 +68,6 @@ def quartile_dataset(df,n=4):
     print(df)
     return L
 def stat_test(df):
-    from scipy.stats import mannwhitneyu, wilcoxon
     for col in range(0, len(df.columns)-1):
         col1=df.columns[col]
         col2=df.columns[col+1]
@@ -270,9 +270,9 @@ def main():
             url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
             st.write("Info about Kostra grouping (%s)" % url)
             if agree:
-                fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13))
+                fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13),kind="reg", plot_kws={'line_kws':{'color':'red'}})
             else:
-                fig_pairplot=sns.pairplot(dataset_Kostra[options])
+                fig_pairplot=sns.pairplot(dataset_Kostra[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
             #st.write(dataset_Kostra)
             st.pyplot(fig_pairplot)
         
@@ -284,7 +284,7 @@ def main():
             n_quartile= st.selectbox(
             "select number of quantile calculation",
             range(1,11),
-            3)
+            1)
             label_quartiles=quartile_dataset(dataset[dataset["Users total"]>min_users][var_quartiles].dropna(),n_quartile)    
             P_data=pd.concat([dataset[options],label_quartiles],axis=1)
             list_quartiles= st.multiselect(
@@ -300,7 +300,7 @@ def main():
             len(P_data.columns[:-1])-1)
     line_plot=plt.figure()
     sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")
-    plt.title("")
+    plt.title("quartiles calculated on "+var_quartiles)
     data_kostra_raw_index=[]
     for ind in dataset.index:
             
@@ -317,16 +317,20 @@ def main():
     pairplot_container = st.container()
     col1pair, col2pair = st.columns([4,4])
     with pairplot_container:
-        # with col1pair:
-            # sc=plt.figure()
+        with col1pair:
+            sc=plt.figure()
             
-            # sns.scatterplot(data=data_kostra_raw,x= options[0], y= options[1])
+            sc=sns.lmplot(data=data_kostra_raw,x= options[1], y= options[0])
            
-
-            # st.pyplot(sc)
+            st.write(data_kostra_raw)
+            st.pyplot(sc)
+        
         with col2pair:     
             st.pyplot(line_plot)
-    
+            a=P_data.query("label_quartiles==0")[var_to_explore].dropna()
+            b=P_data.query("label_quartiles==1")[var_to_explore].dropna()
+            stat, p =mannwhitneyu(a,b,alternative= "greater") 
+            st.write(p)
     return
 
 

@@ -294,38 +294,42 @@ def main():
             P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
             g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
             st.pyplot(g)
-    var_to_explore= st.selectbox(
-            "select variable for quantile exploration",
-             P_data.columns[:-1],
-            len(P_data.columns[:-1])-1)
-    line_plot=plt.figure()
-    sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")
-    plt.title("quartiles calculated on "+var_quartiles)
-    data_kostra_raw_index=[]
-    for ind in dataset.index:
-            
-            ref=dataset["kostragr"][ind]
-            if ref !=16:
-                #st.write(ref)
-                ref_val=dataset_Kostra.loc[ref][var_to_explore].item()
-                #st.write(ref_val)
-                value_k=dataset[var_to_explore][ind]
-                #st.write(value_k)
-                if(value_k>=ref_val):  
-                    data_kostra_raw_index.append(ind)
-    data_kostra_raw=dataset.loc[data_kostra_raw_index]
+    
+
     pairplot_container = st.container()
     col1pair, col2pair = st.columns([4,4])
     with pairplot_container:
         with col1pair:
+            var_to_explore= st.selectbox(
+            "select variable for kostra quartile selections",
+            P_data.columns[:-1],
+            len(P_data.columns[:-1])-1)
+            data_kostra_raw_index=[]
+            for ind in dataset.index:
+                    ref=dataset["kostragr"][ind]
+                    if ref !=16:
+                        #st.write(ref)
+                        ref_val=dataset_Kostra.loc[ref][var_to_explore].item()
+                        #st.write(ref_val)
+                        value_k=dataset[var_to_explore][ind]
+                        #st.write(value_k)
+                        if(value_k>=ref_val):  
+                            data_kostra_raw_index.append(ind)
+            data_kostra_raw=dataset.loc[data_kostra_raw_index]
             sc=plt.figure()
             
             sc=sns.lmplot(data=data_kostra_raw,x= options[1], y= options[0])
            
-            st.write(data_kostra_raw)
             st.pyplot(sc)
         
         with col2pair:     
+            var_to_explore= st.selectbox(
+            "select variable for quantile exploration",
+             P_data.columns[:-1],
+            len(P_data.columns[:-1])-1)
+            line_plot=plt.figure()
+            sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")
+            plt.title("quartiles calculated on "+var_quartiles)
             st.pyplot(line_plot)
             a=P_data.query("label_quartiles==0")[var_to_explore].dropna()
             b=P_data.query("label_quartiles==1")[var_to_explore].dropna()

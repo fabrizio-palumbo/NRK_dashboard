@@ -183,7 +183,8 @@ def main():
         col1, col2 , col3= st.columns([2,2,2])
         with title_container:
             with col1:     
-                st.pyplot(ncr_all_boxplot)
+                #st.pyplot(ncr_all_boxplot)
+                st.write(merged_long_df.drop(["komnr","index"],axis=1).groupby(["year","type"], level=None, as_index=True).agg(['mean', 'std','median']))
             with col2:
                 st.pyplot(ncr_all_ci)
             with col3:

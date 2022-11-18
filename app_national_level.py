@@ -223,7 +223,7 @@ def main():
         with st.form(key='earnering'):
             data_earnering["Tidsperiode"]=data_earnering["Tidsperiode"].astype(str)
             data_earnering["komnr"]=data_earnering["komnr"].astype(int)
-            year_selected_earnering = st.selectbox('Please select the year of interest',options= set(data_earnering["Tidsperiode"]))
+            #year_selected_earnering = st.selectbox('Please select the year of interest',options= set(data_earnering["Tidsperiode"]))
             #st.write(data_earnering.index.duplicated())
             earnering_variable = st.selectbox('Please select the variable of interest',options= set(data_earnering["Måltall"]))
             earnering=data_earnering.query("Måltall== @earnering_variable")

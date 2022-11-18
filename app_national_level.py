@@ -18,7 +18,7 @@ db_folder=cwd+"/database/"
 import json as js
 
 
-def plot_correlation_matrix(df2,type,significance=0.1):
+def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
     fig=plt.figure(figsize=(8,6))
     
     from scipy.stats import pearsonr,spearmanr
@@ -38,7 +38,7 @@ def plot_correlation_matrix(df2,type,significance=0.1):
 
     p_values = calculate_pvalues(df2)                     # get p-Value
     mask_sig = np.invert((p_values<significance))    # mask - only get significant corr
-    sns.heatmap(df2.corr(type),mask=mask_sig, cmap='RdBu_r',annot=False,vmin=-1, vmax=1)
+    sns.heatmap(df2.corr(type),mask=mask_sig, cmap='RdBu_r',annot=annotated,vmin=-1, vmax=1)
     st.pyplot(fig)
     return
 def loadMap(jsonMap):
@@ -131,7 +131,9 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-list_variables={ "Users total":data_users,
+list_variables={ "All ncr":data_all_ncr.divide(data_users),
+"Med ncr":data_med_ncr.divide(data_users),
+"Users total":data_users,
 "Education Ratio (H/L)":data_education,
 "% High educated nurses":data_ed_percentage,
 "Education High":data_educationH.divide(data_users),
@@ -146,10 +148,14 @@ list_variables={ "Users total":data_users,
 "User over 67":data_users_over_67.divide(data_users),
 "Plass avaiable": data_plass_list ,
 "Users very sick": data_users_very_sick,
-"All ncr":data_all_ncr.divide(data_users),
-"Med ncr":data_med_ncr.divide(data_users)}
+}
 if 'variables' not in st.session_state:
     st.session_state['variables'] = list_variables
+if 'kom_kode' not in st.session_state:
+    st.session_state['kom_kode'] = data_komune_code
+if 'kostra' not in st.session_state:
+    st.session_state['kostra'] = data_kostra
+    
 
 years_list=["2016","2017","2018","2020","2021","2019"]
 
@@ -195,35 +201,39 @@ def main():
                 # stat_test(data_all_ncr_norm)
     agreeKPR = st.checkbox('Visualize Kpr data')
     if agreeKPR:
-        data_kpr["aar"]=data_kpr["aar"].astype(str)
-        year_selected = st.selectbox('Please select the year of interest',options= set(data_kpr["aar"]))
-        
-        type_selected = st.selectbox('Please select the type of interest',options= set(data_kpr["tjenestetype - tekst"]))  
-        st.write(type_selected)
-        options_kpr = st.multiselect(
-        "select variable of interest to average as KPR score",
-        set(data_kpr["funksjonstype - tekst"]),
-        list(set(data_kpr["funksjonstype - tekst"]))[0])
-  
-        kpr=data_kpr.query(" `funksjonstype - tekst` in @options_kpr and aar==@year_selected and `tjenestetype - tekst`==@type_selected")
-        kpr=kpr.groupby(by=['kommunenummer','aar'], axis=0, level=None, as_index=False, sort=False,dropna=True).mean()
-        list_variables.update({"KPR": kpr.pivot(index="kommunenummer", columns="aar", values="mean_value")})
-        st.session_state.variables = list_variables
+        with st.form(key='kpr'):
+            data_kpr["aar"]=data_kpr["aar"].astype(str)
+            year_selected = st.selectbox('Please select the year of interest',options= set(data_kpr["aar"]))
+            
+            type_selected = st.selectbox('Please select the type of interest',options= set(data_kpr["tjenestetype - tekst"]))  
+            st.write(type_selected)
+            options_kpr = st.multiselect(
+            "select variable of interest to average as KPR score",
+            set(data_kpr["funksjonstype - tekst"]),
+            list(set(data_kpr["funksjonstype - tekst"]))[0])
+
+            kpr=data_kpr.query(" `funksjonstype - tekst` in @options_kpr and aar==@year_selected and `tjenestetype - tekst`==@type_selected")
+            kpr=kpr.groupby(by=['kommunenummer','aar'], axis=0, level=None, as_index=False, sort=False,dropna=True).mean()
+            list_variables.update({"KPR": kpr.pivot(index="kommunenummer", columns="aar", values="mean_value")})
+            st.session_state.variables = list_variables
+            submit_button_kpr = st.form_submit_button(label='Submit')
 
     Display_earnering = st.checkbox('Visualize Earnering data:')
     if Display_earnering :
-        data_earnering["Tidsperiode"]=data_earnering["Tidsperiode"].astype(str)
-        data_earnering["komnr"]=data_earnering["komnr"].astype(int)
-        year_selected_earnering = st.selectbox('Please select the year of interest',options= set(data_earnering["Tidsperiode"]))
-        #st.write(data_earnering.index.duplicated())
-        earnering_variable = st.selectbox('Please select the variable of interest',options= set(data_earnering["Måltall"]))
-        earnering=data_earnering.query("Måltall== @earnering_variable")
-        # st.write(earnering["komnr"])
-        earnering=earnering.pivot(index="komnr", columns="Tidsperiode", values="Verdi")
-        list_variables.update({"Earnering": earnering})
-        st.session_state.variables = list_variables
-        #list_variables.update({"Earnering": earnering2021})
-    
+        with st.form(key='earnering'):
+            data_earnering["Tidsperiode"]=data_earnering["Tidsperiode"].astype(str)
+            data_earnering["komnr"]=data_earnering["komnr"].astype(int)
+            year_selected_earnering = st.selectbox('Please select the year of interest',options= set(data_earnering["Tidsperiode"]))
+            #st.write(data_earnering.index.duplicated())
+            earnering_variable = st.selectbox('Please select the variable of interest',options= set(data_earnering["Måltall"]))
+            earnering=data_earnering.query("Måltall== @earnering_variable")
+            # st.write(earnering["komnr"])
+            earnering=earnering.pivot(index="komnr", columns="Tidsperiode", values="Verdi")
+            list_variables.update({"Earnering": earnering})
+            st.session_state.variables = list_variables
+            #list_variables.update({"Earnering": earnering2021})
+            submit_button_earnering = st.form_submit_button(label='Submit')
+
     st.write("Correlation analysis")
     min_users= st.select_slider(
     'Select minimum number of patients per kommune',
@@ -250,52 +260,60 @@ def main():
             st.write("Correlation analysis of all kommuner together")
             plot_correlation_matrix(dataset_corr,"spearman")
         with col2corr:
-            q_val= st.multiselect(
+            labels = st.checkbox('Display values')
+
+            q_val= st.selectbox(
             "select quantile of interest per Kostra group",
             [0.25,0.5,0.75],
-            [0.75])
+            2)
             st.write("Correlation analysis of mean per Kostra Group")
             st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
             dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
-            plot_correlation_matrix(dataset_Kostra,"spearman")
+            plot_correlation_matrix(dataset_Kostra,"spearman",annotated=labels)
     
     pairplot_container = st.container()
     col1pair, col2pair = st.columns([4,4])
     with pairplot_container:
         with col1pair:     
-            options = st.multiselect(
-            "select variable of interest to further visualize",
-            list_variables.keys(),
-            ["Med ncr","Stillingsstørrelse"])
-            agree = st.checkbox('Remove oslo')
-            url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
-            st.write("Info about Kostra grouping (%s)" % url)
-            if agree:
-                fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13),kind="reg", plot_kws={'line_kws':{'color':'red'}})
-            else:
-                fig_pairplot=sns.pairplot(dataset_Kostra[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
-            #st.write(dataset_Kostra)
+            with st.form(key='kostra_pairplot'):
+                options = st.multiselect(
+                "select variable of interest to further visualize",
+                list_variables.keys(),
+                ["Med ncr","Stillingsstørrelse"])
+                agree = st.checkbox('Remove oslo')
+                url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
+                st.write("Info about Kostra grouping (%s)" % url)
+                if agree:
+                    fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13),kind="reg", plot_kws={'line_kws':{'color':'red'}})
+                else:
+                    fig_pairplot=sns.pairplot(dataset_Kostra[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
+                #st.write(dataset_Kostra)
+                submit_button_kostra_plot = st.form_submit_button(label='Submit')
             st.pyplot(fig_pairplot)
-        
+                
+
         with col2pair:
-            var_quartiles= st.selectbox(
-            "select variable for quartile calculation",
-            dataset.columns[:-1],
-            len(dataset.columns[:-1])-1)
-            n_quartile= st.selectbox(
-            "select number of quantile calculation",
-            range(1,11),
-            1)
-            label_quartiles=quartile_dataset(dataset[dataset["Users total"]>min_users][var_quartiles].dropna(),n_quartile)    
-            P_data=pd.concat([dataset[options],label_quartiles],axis=1)
-            list_quartiles= st.multiselect(
-            "select quartile of interest to visualize",
-            range(0,n_quartile),[0,n_quartile-1]
-            )
-            P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
-            g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
+            with st.form(key='quartiles_plot'):
+                var_quartiles= st.selectbox(
+                "select variable for quartile calculation",
+                dataset.columns[:-1],
+                len(dataset.columns[:-1])-1)
+                n_quartile= st.selectbox(
+                "select number of quantile calculation",
+                range(1,11),
+                1)
+                label_quartiles=quartile_dataset(dataset[dataset["Users total"]>min_users][var_quartiles].dropna(),n_quartile)    
+                P_data=pd.concat([dataset[options],label_quartiles],axis=1)
+                list_quartiles= st.multiselect(
+                "select quartile of interest to visualize",
+                range(0,n_quartile),[0,n_quartile-1]
+                )
+                P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
+                g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
+                submit_button_earnering = st.form_submit_button(label='Submit')
             st.pyplot(g)
-    
+                
+
 
     pairplot_container = st.container()
     col1pair, col2pair = st.columns([4,4])

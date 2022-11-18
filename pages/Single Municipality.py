@@ -49,11 +49,16 @@ def plot_graph_kommune(dataframe_kom,dataframe_mean_kostra,kom_name,year,y_label
    
     line = alt.Chart(df_plot_kom_meankostra).mark_line().encode(
     alt.X('Year',scale=alt.Scale(zero=False)),
-    alt.Y(y_label,scale=alt.Scale(zero=False))
-    ,color=alt.Color("name:N")
-    )
+    alt.Y(y_label,scale=alt.Scale(zero=False)),
+    # ,color=alt.Color("name:N")
+    color= alt.Color('name',
+                   scale=alt.Scale(
+            domain=['kostra_mean', kom_name],
+            range=['red', 'green'])))
+
+    
         
-    band = alt.Chart(band_plot).mark_errorband(extent='ci', color='orange'
+    band = alt.Chart(band_plot).mark_errorband(extent='ci', color='red'
     ).encode(
     x='Year',
     y= y_label,

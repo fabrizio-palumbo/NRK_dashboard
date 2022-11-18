@@ -38,6 +38,7 @@ data_kostra =st.session_state.kostra
 #---------------------------------------------------------------------------------------------------------------
 # Function for creating line plot
 def plot_graph_kommune(dataframe_kom,dataframe_mean_kostra,kom_name,year,y_label):
+    dataframe_mean_kostra=dataframe_mean_kostra.replace(np.inf, np.nan)
     df_plot = pd.DataFrame({kom_name:dataframe_kom,'kostra_mean':dataframe_mean_kostra.mean(axis=0)
     ,'Year':  list(year)
     })

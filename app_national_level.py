@@ -227,7 +227,7 @@ def main():
             #st.write(data_earnering.index.duplicated())
             earnering_variable = st.selectbox('Please select the variable of interest',options= set(data_earnering["Måltall"]))
             earnering=data_earnering.query("Måltall== @earnering_variable")
-            # st.write(earnering["komnr"])
+            #st.write(earnering["komnr"])
             earnering=earnering.pivot(index="komnr", columns="Tidsperiode", values="Verdi")
             list_variables.update({"Earnering": earnering})
             st.session_state.variables = list_variables

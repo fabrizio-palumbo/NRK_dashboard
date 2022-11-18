@@ -104,6 +104,7 @@ def main():
     cols.extend(st.columns(3))
     cols.extend(st.columns(3))
     cols.extend(st.columns(3))
+    cols.extend(st.columns(3))
 
 #     # col1,col2 = st.columns(2)
 #     # Row 2
@@ -192,7 +193,6 @@ def main():
                 dataset = data.loc[int(komune_code)]
                 #mean_education=data_education.loc[list_komune_kostra].median(axis = 0)
                 kostra_mean=data.loc[[ int(komune_index) for komune_index in list_komune_kostra if int(komune_index) in data.index]]#.median(axis = 0)
-                
                 line_plot=plot_graph_kommune(dataset,kostra_mean,komune_name,dataset.index, values)  
                 with cols[i]:            
                     st.subheader(values)

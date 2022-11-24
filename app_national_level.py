@@ -266,7 +266,7 @@ def main():
             "select quantile of interest per Kostra group",
             [0.25,0.5,0.75],
             2)
-            st.write("Correlation analysis of mean per Kostra Group")
+            st.write("Correlation analysis of Quantiles of interest per Variable per Kostra Group")
             st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
             dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
             plot_correlation_matrix(dataset_Kostra,"spearman",annotated=labels)
@@ -336,11 +336,12 @@ def main():
                             data_kostra_raw_index.append(ind)
             data_kostra_raw=dataset.loc[data_kostra_raw_index]
             sc=plt.figure()
-            
-            sc=sns.lmplot(data=data_kostra_raw,x= options[1], y= options[0])
-           
+            sc=sns.pairplot(data_kostra_raw[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
+
+            #sc=sns.lmplot(data=data_kostra_raw,x= options[1], y= options[0])
+
             st.pyplot(sc)
-        
+            plot_correlation_matrix(data_kostra_raw,"spearman")
         with col2pair:     
             var_to_explore= st.selectbox(
             "select variable for quantile exploration",
@@ -354,6 +355,8 @@ def main():
             b=P_data.query("label_quartiles==1")[var_to_explore].dropna()
             stat, p =mannwhitneyu(a,b,alternative= "greater") 
             st.write(p)
+
+
     return
 
 

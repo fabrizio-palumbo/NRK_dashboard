@@ -11,19 +11,14 @@ import numpy as np
 import os
 from matplotlib import cm, colors
 from scipy.stats import mannwhitneyu, wilcoxon
+from scipy.stats import pearsonr,spearmanr
 
 cwd = os.getcwd()
 db_folder=cwd+"/database/"
 
 import json as js
 
-
-def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
-    fig=plt.figure(figsize=(8,6))
-    
-    from scipy.stats import pearsonr,spearmanr
-
-    def calculate_pvalues(df):
+def calculate_pvalues(df,type):
         dfcols = pd.DataFrame(columns=df.columns)
         pvalues = dfcols.transpose().join(dfcols, how='outer')
         for r in df.columns:
@@ -36,7 +31,9 @@ def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
                         pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
         return pvalues
 
-    p_values = calculate_pvalues(df2)                     # get p-Value
+def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
+    fig=plt.figure(figsize=(8,6))
+    p_values = calculate_pvalues(df2,type)                     # get p-Value
     mask_sig = np.invert((p_values<significance))    # mask - only get significant corr
     sns.heatmap(df2.corr(type),mask=mask_sig, cmap='RdBu_r',annot=annotated,vmin=-1, vmax=1)
     st.pyplot(fig)
@@ -131,23 +128,23 @@ data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
 # data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-list_variables={ "All ncr":data_all_ncr.divide(data_users),
-"Med ncr":data_med_ncr.divide(data_users),
-"Users total":data_users,
-"Education Ratio (H/L)":data_education,
-"% High educated nurses":data_ed_percentage,
-"Education High":data_educationH.divide(data_users),
-"Education Low":data_educationL.divide(data_users),
+list_variables={ "All_ncr":data_all_ncr.divide(data_users),
+"Med_ncr":data_med_ncr.divide(data_users),
+"Users_total":data_users,
+"Education_Ratio_(H/L)":data_education,
+"%_High_educated_nurses":data_ed_percentage,
+"Education_High":data_educationH.divide(data_users),
+"Education_Low":data_educationL.divide(data_users),
 "Stillingsstørrelse":data_stilstor,
-"Timar i uka":data_timar_i_uke,
-"Timar i uka 67+":data_timar_i_uke_67plus,
-"Åarsvekt per user":data_arsvekt_per_user,
+"Timar_i_uka":data_timar_i_uke,
+"Timar_ i_uka_67+":data_timar_i_uke_67plus,
+"Åarsvekt_per_user":data_arsvekt_per_user,
 "heltid":data_heltid,
 "Vakter":data_vakter.divide(data_users).dropna(axis=1, how="all"),
 "Lonn":data_lonn.divide(data_users).dropna(axis=1, how="all"),
-"User over 67":data_users_over_67.divide(data_users),
-"Plass avaiable": data_plass_list ,
-"Users very sick": data_users_very_sick,
+"User_over_67":data_users_over_67.divide(data_users),
+"Plass_avaiable": data_plass_list ,
+"Users_very_sick": data_users_very_sick,
 }
 if 'variables' not in st.session_state:
     st.session_state['variables'] = list_variables
@@ -157,7 +154,7 @@ if 'kostra' not in st.session_state:
     st.session_state['kostra'] = data_kostra
     
 
-years_list=["2016","2017","2018","2020","2021","2019"]
+years_list=["2016","2017","2018","2019","2020","2021"]
 
 def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
@@ -233,25 +230,44 @@ def main():
             st.session_state.variables = list_variables
             #list_variables.update({"Earnering": earnering2021})
             submit_button_earnering = st.form_submit_button(label='Submit')
+    with st.form(key='all_data_filtering'):
+        st.write("Correlation analysis")
+        min_users= st.select_slider(
+        'Select minimum number of patients per kommune',
+        options=list(range(0,100,10)))
+        paramters_container = st.container()
+        col1p, col2p = st.columns([1,4])
+        with paramters_container:
+            with col1p:     
+                var_percentiles=st.multiselect(
+                "select variable of interest to filter data",
+                list_variables.keys(),
+                ["Med_ncr"],max_selections=1)
+            with col2p:
+                restrict_range_values= st.slider(
+                'Select the percentiles of interest',
+                0, 100, (0, 100),step=1)
+        year_selected = st.selectbox('Please select the year of interest',options= years_list,index=len(years_list)-2)     
+        dataset=pd.DataFrame()
+        dataset.index.name="komnr"
+        var_names=[]
+        for var in list_variables.keys():
+            var_names.append(var)
+            # st.write(len(list_variables[var][year_selected].dropna()))
+            try:
+                to_append=list_variables[var][year_selected].dropna()#.rename(index={'301':'0301'},inplace=True)
+                dataset[var]=to_append
+            except Exception as error:
+                st.write("variable ", var, "missing for year ", year_selected)
+        dataset=dataset.query("Users_total >= @min_users")
+        low_p,high_p=restrict_range_values
+        low_val=dataset[var_percentiles].quantile(low_p/100).item()
+        high_val=dataset[var_percentiles].quantile(high_p/100).item()
+        dataset=dataset.query("{0} >= @low_val & {0}  <= @high_val  ".format(var_percentiles[0]))
 
-    st.write("Correlation analysis")
-    min_users= st.select_slider(
-    'Select minimum number of patients per kommune',
-    options=list(range(0,100,10)))
-    year_selected = st.selectbox('Please select the year of interest',options= years_list)     
-    dataset=pd.DataFrame()
-    dataset.index.name="komnr"
-    for var in list_variables.keys():
-        # st.write(len(list_variables[var][year_selected].dropna()))
-        try:
-            to_append=list_variables[var][year_selected].dropna()#.rename(index={'301':'0301'},inplace=True)
-            dataset[var]=to_append
-        except Exception as error:
-            st.write("variable ", var, "missing for year ", year_selected)
-
-    dataset["kostragr"]=data_kostra.kostragr.astype(int)
-    dataset_corr=dataset.iloc[:,:-1]
-   
+        dataset["kostragr"]=data_kostra.kostragr.astype(int)
+        dataset_corr=dataset.iloc[:,:-1]
+        submit_button_filter_all_data = st.form_submit_button(label='Submit')
     # st.write(dataset)
     corr_container = st.container()
     col1corr, col2corr = st.columns([4,4])
@@ -260,49 +276,36 @@ def main():
             st.write("Correlation analysis of all kommuner together")
             plot_correlation_matrix(dataset_corr,"spearman")
         with col2corr:
-            labels = st.checkbox('Display values')
-
-            q_val= st.selectbox(
-            "select quantile of interest per Kostra group",
-            [0.25,0.5,0.75],
-            2)
-            st.write("Correlation analysis of Quantiles of interest per Variable per Kostra Group")
-            st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
-            dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
-            plot_correlation_matrix(dataset_Kostra,"spearman",annotated=labels)
-    
+            with st.form(key='all_data_pairplot'):
+                options = st.multiselect(
+                "select variable of interest to further visualize (first x, then y)",
+                list_variables.keys(),
+                ["Stillingsstørrelse","Med_ncr"],max_selections=2)
+                # fig_all_pairplot=sns.pairplot(dataset_corr[options],kind="reg", plot_kws={'line_kws':{'color':'red'}, 'robust':True})
+                tmp = dataset_corr[options][dataset_corr[options[0]].notnull() & dataset_corr[options[1]].notnull()]
+                r, pvalue = spearmanr(tmp [options[0]], tmp [options[1]])
+                fig_all_regplot=plt.figure()
+                sns.regplot(data=dataset_corr,x=options[0], y= options[1],order=1,truncate=True,robust=True,label=f'Spearman = {r:.2f}, pval= {pvalue:.2f}')#
+                plt.legend()
+                submit_all_data_pairplot = st.form_submit_button(label='Submit')
+                st.pyplot(fig_all_regplot)
+       
+            
+             
     pairplot_container = st.container()
     col1pair, col2pair = st.columns([4,4])
     with pairplot_container:
-        with col1pair:     
-            with st.form(key='kostra_pairplot'):
-                options = st.multiselect(
-                "select variable of interest to further visualize",
-                list_variables.keys(),
-                ["Med ncr","Stillingsstørrelse"])
-                agree = st.checkbox('Remove oslo')
-                url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
-                st.write("Info about Kostra grouping (%s)" % url)
-                if agree:
-                    fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13),kind="reg", plot_kws={'line_kws':{'color':'red'}})
-                else:
-                    fig_pairplot=sns.pairplot(dataset_Kostra[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
-                #st.write(dataset_Kostra)
-                submit_button_kostra_plot = st.form_submit_button(label='Submit')
-            st.pyplot(fig_pairplot)
-                
-
-        with col2pair:
+        with col1pair:
             with st.form(key='quartiles_plot'):
                 var_quartiles= st.selectbox(
                 "select variable for quartile calculation",
-                dataset.columns[:-1],
-                len(dataset.columns[:-1])-1)
+                var_names,
+                var_names.index("Med_ncr"))
                 n_quartile= st.selectbox(
                 "select number of quantile calculation",
                 range(1,11),
                 1)
-                label_quartiles=quartile_dataset(dataset[dataset["Users total"]>min_users][var_quartiles].dropna(),n_quartile)    
+                label_quartiles=quartile_dataset(dataset[var_quartiles].dropna(),n_quartile)    
                 P_data=pd.concat([dataset[options],label_quartiles],axis=1)
                 list_quartiles= st.multiselect(
                 "select quartile of interest to visualize",
@@ -311,41 +314,11 @@ def main():
                 P_data_extreme=P_data.query("label_quartiles in @list_quartiles")
                 g=sns.pairplot(P_data_extreme,hue="label_quartiles",palette='tab10')
                 submit_button_earnering = st.form_submit_button(label='Submit')
-            st.pyplot(g)
-                
-
-
-    pairplot_container = st.container()
-    col1pair, col2pair = st.columns([4,4])
-    with pairplot_container:
-        with col1pair:
-            var_to_explore= st.selectbox(
-            "select variable for kostra quartile selections",
-            P_data.columns[:-1],
-            len(P_data.columns[:-1])-1)
-            data_kostra_raw_index=[]
-            for ind in dataset.index:
-                    ref=dataset["kostragr"][ind]
-                    if ref !=16:
-                        #st.write(ref)
-                        ref_val=dataset_Kostra.loc[ref][var_to_explore].item()
-                        #st.write(ref_val)
-                        value_k=dataset[var_to_explore][ind]
-                        #st.write(value_k)
-                        if(value_k>=ref_val):  
-                            data_kostra_raw_index.append(ind)
-            data_kostra_raw=dataset.loc[data_kostra_raw_index]
-            sc=plt.figure()
-            sc=sns.pairplot(data_kostra_raw[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
-
-            #sc=sns.lmplot(data=data_kostra_raw,x= options[1], y= options[0])
-
-            st.pyplot(sc)
-            plot_correlation_matrix(data_kostra_raw,"spearman")
+            st.pyplot(g)          
         with col2pair:     
             var_to_explore= st.selectbox(
             "select variable for quantile exploration",
-             P_data.columns[:-1],
+            P_data.columns[:-1],
             len(P_data.columns[:-1])-1)
             line_plot=plt.figure()
             sns.lineplot( data=P_data,x="label_quartiles",y=var_to_explore,color="b")

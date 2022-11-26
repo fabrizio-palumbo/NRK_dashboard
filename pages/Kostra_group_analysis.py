@@ -213,7 +213,7 @@ def main():
             plt.legend()
             st.pyplot(sc)
             with col1pair:
-                plot_correlation_matrix(data_kostra_raw,"pearson")
+                plot_correlation_matrix(data_kostra_raw.iloc[:,:-1],"pearson")
 
 # calling main function
 main()

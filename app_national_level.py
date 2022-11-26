@@ -24,7 +24,7 @@ def calculate_pvalues(df,type):
         for r in df.columns:
             for c in df.columns:
                 tmp = df[df[r].notnull() & df[c].notnull()]
-                if type=="pearsonr":
+                if type=="pearson":
                     pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
                 else:
                     if type=="spearman":
@@ -224,7 +224,7 @@ def main():
             #st.write(data_earnering.index.duplicated())
             earnering_variable = st.selectbox('Please select the variable of interest',options= set(data_earnering["Måltall"]))
             earnering=data_earnering.query("Måltall== @earnering_variable")
-            #st.write(earnering["komnr"])
+      
             earnering=earnering.pivot(index="komnr", columns="Tidsperiode", values="Verdi")
             list_variables.update({"Earnering": earnering})
             st.session_state.variables = list_variables
@@ -274,7 +274,7 @@ def main():
     with corr_container:
         with col1corr:     
             st.write("Correlation analysis of all kommuner together")
-            plot_correlation_matrix(dataset_corr,"spearman")
+            plot_correlation_matrix(dataset_corr,"pearson")
         with col2corr:
             with st.form(key='all_data_pairplot'):
                 options = st.multiselect(
@@ -283,9 +283,9 @@ def main():
                 ["Stillingsstørrelse","Med_ncr"],max_selections=2)
                 # fig_all_pairplot=sns.pairplot(dataset_corr[options],kind="reg", plot_kws={'line_kws':{'color':'red'}, 'robust':True})
                 tmp = dataset_corr[options][dataset_corr[options[0]].notnull() & dataset_corr[options[1]].notnull()]
-                r, pvalue = spearmanr(tmp [options[0]], tmp [options[1]])
+                r, pvalue = pearsonr(tmp [options[0]], tmp [options[1]])
                 fig_all_regplot=plt.figure()
-                sns.regplot(data=dataset_corr,x=options[0], y= options[1],order=1,truncate=True,robust=True,label=f'Spearman = {r:.2f}, pval= {pvalue:.2f}')#
+                sns.regplot(data=dataset_corr,x=options[0], y= options[1],order=1,truncate=True,robust=True,label=f'pearson corr= {r:.2f}, pval= {pvalue:.2f}')#
                 plt.legend()
                 submit_all_data_pairplot = st.form_submit_button(label='Submit')
                 st.pyplot(fig_all_regplot)

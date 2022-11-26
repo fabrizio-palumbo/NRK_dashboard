@@ -30,11 +30,12 @@ def calculate_pvalues(df,type):
         for r in df.columns:
             for c in df.columns:
                 tmp = df[df[r].notnull() & df[c].notnull()]
-                if type=="pearsonr":
-                    pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
-                else:
-                    if type=="spearman":
-                        pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
+                if(len(tmp[r])>2):
+                    if type=="pearson":
+                        pvalues[r][c] = round(pearsonr(tmp[r], tmp[c])[1], 4)
+                    else:
+                        if type=="spearman":
+                            pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
         return pvalues
 
 def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
@@ -91,7 +92,15 @@ def stat_test(df):
         else:
             st.write(paired_data.columns[col], "-", paired_data.columns[col+1],'Different distribution (reject H0), Paired test ' , "p=", p)
     return
-
+def corrfunc(x, y, ax=None, **kws):
+    """Plot the correlation coefficient in the top left hand corner of a plot."""
+    if(len(x) != len(y)):
+        return 
+    else:
+        r, p = pearsonr(x, y)
+        ax = ax or plt.gca()
+        ax.annotate(f'corr = {r:.2f}, pval= {p:.2f}', xy=(.1, .9), xycoords=ax.transAxes)
+    return
 #-------------------------------from fabrizio 
 #Loading the dataset
 data_komune_code =st.session_state.kom_kode
@@ -126,21 +135,36 @@ def main():
                 st.write("Correlation analysis of Quantiles of interest per Variable per Kostra Group")
                 st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
                 dataset_Kostra=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val)
-                plot_correlation_matrix(dataset_Kostra,"spearman",annotated=labels)
+                plot_correlation_matrix(dataset_Kostra,"pearson",annotated=labels)
                 submit_button_kostra_pairplot = st.form_submit_button(label='Submit')
         with col2pair:     
             with st.form(key='kostra_pairplot'):
+                # try:
                 options = st.multiselect(
                 "select variable of interest to further visualize",
-                list_variables.keys(),
+                dataset_Kostra.columns,
                 ["Med_ncr","Stillingsstørrelse"])
+                # except Exception as error:    
+                #     options = st.multiselect(
+                # "select variable of interest to further visualize",
+                # dataset_Kostra.columns,
+                # dataset_Kostra.columns)
+                # st.write()(options)                    
                 agree = st.checkbox('Remove oslo')
                 url = "https://www.ssb.no/en/klass/klassifikasjoner/112/koder"
                 st.write("Info about Kostra grouping (%s)" % url)
                 if agree:
                     fig_pairplot=sns.pairplot(dataset_Kostra[options].drop(13),kind="reg", plot_kws={'line_kws':{'color':'red'}})
+                    try:
+                        fig_pairplot.map_lower(corrfunc)
+                    except Exception as error:
+                        st.write("error with variables, maybe issing data")
                 else:
                     fig_pairplot=sns.pairplot(dataset_Kostra[options],kind="reg", plot_kws={'line_kws':{'color':'red'}})
+                    try:
+                        fig_pairplot.map_lower(corrfunc)
+                    except Exception as error:
+                        st.write("error with variables, maybe issing data")
                 #st.write(dataset_Kostra)
                 submit_button_kostra_plot = st.form_submit_button(label='Submit')
             st.pyplot(fig_pairplot)
@@ -150,6 +174,12 @@ def main():
                     "select variable for kostra quartile selections",
                     var_names,
                     var_names.index("Med_ncr"))
+                    q_val_sel= st.selectbox(
+                    "select top X% municipality per kostragroup",
+                    [0,25,50,75],
+                    2)
+                    st.write("Kostra Group 16 removed because of lack of data (4 kommuner < 600 inhabitants) ")
+                    dataset_Kostra_sel=dataset.query("kostragr !=16 ").groupby(by=['kostragr'], axis=0, level=None, as_index=True, sort=False,dropna=True).quantile(q_val_sel/100)
                     st.write("Use this variable to select all the municipalities per kostragroup in the quartile selected above (correlation matrix). I.E. if Med_ncr you are selection the top 50% (if quantile =0.5) municipalities per medcical ncr.")
                     x_to_plot= st.selectbox(
                     "select variable x to plot",
@@ -164,7 +194,7 @@ def main():
     for ind in dataset.index:
         ref=dataset["kostragr"][ind]
         if ref !=16:
-            ref_val=dataset_Kostra.loc[ref][var_to_explore].item()
+            ref_val=dataset_Kostra_sel.loc[ref][var_to_explore].item()
             value_k=dataset[var_to_explore][ind]
             if(value_k>=ref_val):  
                 data_kostra_raw_index.append(ind)
@@ -178,12 +208,12 @@ def main():
             # sc=sns.lmplot(data=data_kostra_raw,x= x_to_plot, y= y_to_plot,truncate=True,robust=True, order=1)#
 
             tmptest = data_kostra_raw[data_kostra_raw[x_to_plot].notnull() & data_kostra_raw[y_to_plot].notnull()]
-            r, pvalue = spearmanr(tmptest[x_to_plot], tmptest[y_to_plot])
-            sns.regplot(data=data_kostra_raw,x= x_to_plot, y= y_to_plot,truncate=True,robust=True, order=1,label=f'Spearman = {r:.2f}, pval= {pvalue:.2f}')#
+            r, pvalue = pearsonr(tmptest[x_to_plot], tmptest[y_to_plot])
+            sns.regplot(data=data_kostra_raw,x= x_to_plot, y= y_to_plot,truncate=True,robust=True, order=1,label=f'pearsonr corr= {r:.2f}, pval= {pvalue:.2f}')#
             plt.legend()
             st.pyplot(sc)
             with col1pair:
-                plot_correlation_matrix(data_kostra_raw,"spearman")
+                plot_correlation_matrix(data_kostra_raw,"pearson")
 
 # calling main function
 main()

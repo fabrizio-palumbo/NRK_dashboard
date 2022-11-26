@@ -10,19 +10,19 @@ import os
 from matplotlib import cm, colors
 import statsmodels.api as sm
 from scipy import stats
-
+from statsmodels.genmod.generalized_linear_model import GLM 
 list_variables=st.session_state.variables 
 years_list=["2020","2021","2019"]
 def main():   
     year_selected = st.selectbox('Please select the year of interest',options= years_list)     
     options= [k for k in list_variables.keys()]
-    variable_regressor = st.selectbox('Select 1 variable to regress',options=["All ncr","Med ncr"])     
+    variable_regressor = st.selectbox('Select 1 variable to regress',options=["All_ncr","Med_ncr"])     
     min_users= st.select_slider(
     'Select minimum number of patients per kommune',
     options=list(range(0,100,10)))
-    variable_to_remove=["Med ncr","All ncr"]
+    variable_to_remove=["Med_ncr","All_ncr"]
     remove_var = st.checkbox('Remove_variable')
-    users_selection=pd.DataFrame(list_variables["Users total"][year_selected])
+    users_selection=pd.DataFrame(list_variables["Users_total"][year_selected])
     #st.write(users_selection)
     index_selected_users=users_selection.query("`{0}` >  @min_users".format(year_selected)).index
     url = "https://www.mygreatlearning.com/blog/generalized-linear-models/#difference-between-generalized-linear-model-and-general-linear-model"
@@ -54,6 +54,9 @@ def main():
     glm_binom = sm.GLM(Yy,Xx,family=sm.families.Gamma(link=sm.families.links.log()))#family=sm.families.Poisson(link=sm.families.links.log())
     res = glm_binom.fit()#method="lbfgs"
     st.write(res.summary())
+    reg_glm=GLM(Yy,Xx,family=sm.families.Gamma(link=sm.families.links.log()))
+    res_reg_glm =  reg_glm.fit_regularized(refit=False, maxiter=10000,method="elastic_net",alpha=0.01 )
+    st.write(res_reg_glm.params)
     nobs = res.nobs
     y =(Yy)
     yhat = res.mu

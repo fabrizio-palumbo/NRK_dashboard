@@ -114,7 +114,7 @@ def main():
             sum_diff=data_diff.sum(axis=1)
 
             f=plt.figure()
-            sns.histplot(sum_diff)
+            sns.histplot(sum_diff*100)
             plt.title("histogram of average %increase of all municipalities")
             plt.axvline(x=t,linewidth=4, color='r')
             st.pyplot(f)

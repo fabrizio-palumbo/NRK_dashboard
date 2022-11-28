@@ -28,11 +28,7 @@ def loadMap(jsonMap):
 def orderData(reference, df):
     df.index = df.index.map(int)
     df.index = df.index.map(str)
-    st.write(df)
-
     reference=pd.DataFrame(reference)
-
-    
     R=reference.merge(df.reset_index(),'inner')
     return R
 

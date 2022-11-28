@@ -107,7 +107,7 @@ def main():
     with plot_container:
         t= st.slider('Select the min average increase (in %)',
                         0, 100, (0),step=1)
-        t=t/100
+        t=t
         with col1: 
             data_diff=list_variables[variable_name].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
             # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)

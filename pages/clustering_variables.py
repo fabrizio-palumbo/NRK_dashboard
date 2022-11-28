@@ -107,7 +107,7 @@ def main():
     with plot_container:
         t= st.slider('Select the min average increase (in %)',
                         0, 100, (0),step=1)
-        t=t
+        t=t/100
         with col1: 
             data_diff=list_variables[variable_name].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
             # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)
@@ -116,7 +116,7 @@ def main():
             f=plt.figure()
             sns.histplot(sum_diff*100)
             plt.title("histogram of average %increase of all municipalities")
-            plt.axvline(x=t,linewidth=4, color='r')
+            plt.axvline(x=t*100,linewidth=4, color='r')
             st.pyplot(f)
         with col2: 
             labels = 'Increased', 'Decreased', 'Uncertain'

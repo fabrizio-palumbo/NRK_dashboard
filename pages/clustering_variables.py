@@ -102,22 +102,55 @@ def cluster_corr_data(data, num_of_clusters,metod,name_variable, fig_size=(8,6),
 
 def main():   
     variable_name = st.selectbox('Select the variable of interest',options= [k for k in list_variables.keys()])     
-    number_of_cluster = st.selectbox('Select how many cluster to detect',options= range(2,11))     
-    a,b,c,d,e=cluster_corr_data(list_variables[variable_name], number_of_cluster,"ward","name_variable", fig_size=(8,6), heatmap_plot=True)
-    for i,element in enumerate(a):
-        st.write("cluster number :", i,"contains ", np.asarray(element).size, "kommuner")
-    new_cmap = colors.LinearSegmentedColormap.from_list('new_cmap',c,number_of_cluster)
-    fig, axis = plt.subplots()
-    plotMap(b,norwayMap, axis=axis, color_mapping=new_cmap)
-    
-    # buf = BytesIO()
-    # fig.savefig(buf, format="png")
-    # st.image(buf,width=100, use_column_width=100)
     plot_container = st.container()
     col1, col2 = st.columns([4,4])
     with plot_container:
+        t= st.slider('Select the min average increase (in %)',
+                        0, 100, (0),step=1)
+        t=t/100
         with col1: 
-                st.pyplot(fig)
+            data_diff=list_variables[variable_name].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
+            # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)
+            sum_diff=data_diff.sum(axis=1)
+
+            f=plt.figure()
+            sns.histplot(sum_diff)
+            plt.title("histogram of average %increase of all municipalities")
+            plt.axvline(x=t,linewidth=4, color='r')
+            st.pyplot(f)
+        with col2: 
+            labels = 'Increased', 'Decreased', 'Uncertain'
+            
+            l1=sum_diff[sum_diff>=t].count()
+            l2=sum_diff[sum_diff<=-t].count()
+            l3=sum_diff[(sum_diff>(-t)) & (sum_diff<t)].count()
+            sizes = [l1,l2,l3]
+            explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
+
+            fig1, ax1 = plt.subplots()
+            ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
+                    shadow=True, startangle=90)
+            ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+            st.pyplot(fig1)
+    clustering_approach = st.checkbox('cluster the data')
+    if clustering_approach:
+        number_of_cluster = st.selectbox('Select how many cluster to detect',options= range(2,11))     
+        a,b,c,d,e=cluster_corr_data(list_variables[variable_name], number_of_cluster,"ward","name_variable", fig_size=(8,6), heatmap_plot=True)
+        for i,element in enumerate(a):
+            st.write("cluster number :", i,"contains ", np.asarray(element).size, "kommuner")
+        # new_cmap = colors.LinearSegmentedColormap.from_list('new_cmap',c,number_of_cluster)
+        # fig, axis = plt.subplots()
+        # plotMap(b,norwayMap, axis=axis, color_mapping=new_cmap)
+        
+        # # buf = BytesIO()
+        # # fig.savefig(buf, format="png")
+        # # st.image(buf,width=100, use_column_width=100)
+        # plot_container = st.container()
+        # col1, col2 = st.columns([4,4])
+        # with plot_container:
+        #     with col1: 
+        #             st.pyplot(fig)
 
     return
 

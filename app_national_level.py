@@ -12,7 +12,7 @@ import os
 from matplotlib import cm, colors
 from scipy.stats import mannwhitneyu, wilcoxon
 from scipy.stats import pearsonr,spearmanr
-
+st.cache(ttl=24*3600)
 cwd = os.getcwd()
 db_folder=cwd+"/database/"
 

@@ -105,11 +105,20 @@ def main():
     plot_container = st.container()
     col1, col2 = st.columns([4,4])
     with plot_container:
-        t= st.slider('Select the min average increase (in %)',
+        with col2:
+            t= st.slider('Select the min average increase (in %)',
                         0, 100, (0),step=1)
-        t=t/100
-        with col1: 
-            data_diff=list_variables[variable_name].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
+            t=t/100
+        with col1:
+            years_db=list_variables[variable_name].columns
+            restrict_range_years= st.slider(
+                'Select the years of interest',
+                int(years_db[0]), int(years_db[-1]), (int(years_db[0]), int(years_db[-1])),step=1)
+            min_y,max_y=restrict_range_years
+            years_to_select=[str(w) for w in list(range(min_y,max_y+1,1))]
+        with col1:
+            
+            data_diff=list_variables[variable_name][ years_to_select].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
             # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)
             sum_diff=data_diff.sum(axis=1)
 
@@ -136,7 +145,7 @@ def main():
     clustering_approach = st.checkbox('cluster the data')
     if clustering_approach:
         number_of_cluster = st.selectbox('Select how many cluster to detect',options= range(2,11))     
-        a,b,c,d,e=cluster_corr_data(list_variables[variable_name], number_of_cluster,"ward","name_variable", fig_size=(8,6), heatmap_plot=True)
+        a,b,c,d,e=cluster_corr_data(list_variables[variable_name][ years_to_select], number_of_cluster,"ward","name_variable", fig_size=(8,6), heatmap_plot=True)
         for i,element in enumerate(a):
             st.write("cluster number :", i,"contains ", np.asarray(element).size, "kommuner")
         # new_cmap = colors.LinearSegmentedColormap.from_list('new_cmap',c,number_of_cluster)

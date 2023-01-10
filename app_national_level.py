@@ -92,6 +92,8 @@ data_ed_percentage = pd.read_csv(db_folder+ 'education_percentage.csv', encoding
 data_educationH= pd.read_csv(db_folder+ 'education_High.csv', encoding='latin-1', index_col='komnr')
 data_educationL = pd.read_csv(db_folder+ 'education_low.csv', encoding='latin-1', index_col='komnr')
 data_users_very_sick = pd.read_csv(db_folder+ 'users_very_sick.csv',encoding='utf-8',index_col='komnr')
+data_users_medium_to_very_sick = pd.read_csv(db_folder+ 'users_medium_to_very_sick.csv',encoding='utf-8',index_col='komnr')
+
 #data_users_very_sick.index=data_users_very_sick.index.map(int)
 data_earnering=pd.read_csv(db_folder+ 'earnering.csv',encoding='utf-8')
 data_befolkning_69 = pd.read_csv(db_folder+ 'befolkning_69.csv',encoding='latin-1',index_col='komnr')
@@ -107,6 +109,9 @@ data_timar_i_uke.index = data_timar_i_uke.index.map(int)
 data_timar_i_uke_67plus = pd.read_csv(db_folder+ 'timar_i_uka_67plus.csv',encoding='latin-1',index_col='komnr')
 data_timar_i_uke_67plus.index = data_timar_i_uke_67plus.index.map(int)
 
+data_timar_alle_hjemmetjenester=pd.read_csv(db_folder+ 'timar_i_uka_all_institution.csv',encoding='latin-1',index_col='komnr')
+data_timar_alle_hjemmetjenester.index = data_timar_alle_hjemmetjenester.index.map(int)
+
 
 data_users = pd.read_csv(db_folder+ 'users.csv',encoding='latin-1',index_col='komnr')
 data_users_over_67 = pd.read_csv(db_folder+ 'users_over_67.csv',encoding='latin-1',index_col=0)
@@ -117,26 +122,31 @@ data_kpr = pd.read_csv(db_folder+ 'kpr.csv',encoding='utf-8')
 # data_kostra.index = data_kostra.index.map(str)
 data_all_ncr = pd.read_csv(db_folder+ 'all_ncr.csv',encoding='latin-1',index_col=0)
 data_all_ncr=data_all_ncr.apply(pd.to_numeric, errors='coerce')
-# data_all_ncr["komnr"]=data_all_ncr["komnr"].astype(str)
+#data_all_ncr["komnr"]=data_all_ncr["komnr"].astype(str)
 data_all_ncr=data_all_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)
+data_all_ncr.index = data_all_ncr.index.map(int)
+#data_all_ncr.index = data_all_ncr.index.map(str)
 
 #data_all_ncr.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
 data_med_ncr = pd.read_csv(db_folder+ 'med_NCR.csv',encoding='latin-1',index_col=0)
 data_med_ncr=data_med_ncr.apply(pd.to_numeric, errors='coerce')
-# data_med_ncr["komnr"]=data_med_ncr["komnr"].astype(str)
+data_med_ncr.index = data_med_ncr.index.map(int)
+#data_med_ncr.index = data_med_ncr.index.map(str)
+
 data_med_ncr=data_med_ncr.groupby(by=['komnr'], axis=0, level=None, as_index=True, sort=False,dropna=True).sum(min_count=1)#.set_index('komnr',drop=True, append=False, inplace=True, verify_integrity=True)
 
-list_variables={ "All_ncr":data_all_ncr.divide(data_users),
-"Med_ncr":data_med_ncr.divide(data_users),
+list_variables={ "All_ncr":data_all_ncr.divide(data_users),#*100,
+"Med_ncr":data_med_ncr.divide(data_users),#(data_med_ncr.divide(data_users)).multiply(100),
 "Users_total":data_users,
 "Education_Ratio_(H/L)":data_education,
 "%_High_educated_nurses":data_ed_percentage,
 "Education_High":data_educationH.divide(data_users),
 "Education_Low":data_educationL.divide(data_users),
 "Stillingsstørrelse":data_stilstor,
-"Timar_i_uka":data_timar_i_uke,
-"Timar_ i_uka_67+":data_timar_i_uke_67plus,
+"Timer_i_uka":data_timar_i_uke,
+"Timer_ i_uka_67+":data_timar_i_uke_67plus,
+"Timer_alle_hjemmetjenester":data_timar_alle_hjemmetjenester,
 "Åarsvekt_per_user":data_arsvekt_per_user,
 "heltid":data_heltid,
 "Vakter":data_vakter.divide(data_users).dropna(axis=1, how="all"),
@@ -144,6 +154,8 @@ list_variables={ "All_ncr":data_all_ncr.divide(data_users),
 "User_over_67":data_users_over_67.divide(data_users),
 "Plass_avaiable": data_plass_list ,
 "Users_very_sick": data_users_very_sick,
+"Users_medium_to_very_sick": data_users_medium_to_very_sick
+
 }
 if 'variables' not in st.session_state:
     st.session_state['variables'] = list_variables
@@ -159,8 +171,8 @@ def main():
     ncr_visualization = st.checkbox('Visualize ncr data')
     if ncr_visualization:
         ncr_all_boxplot=plt.figure()
-        data_med_ncr_norm=list_variables["Med ncr"]
-        data_all_ncr_norm=list_variables["All ncr"]
+        data_med_ncr_norm=list_variables["Med_ncr"]
+        data_all_ncr_norm=list_variables["All_ncr"]
         df_long_all=pd.wide_to_long(data_all_ncr_norm.reset_index(), stubnames='', i="komnr", j='year').reset_index().dropna()
         df_long_all.columns=["komnr","year","Ncr_ratio"]
         df_long_all["type"]="Total"
@@ -180,7 +192,7 @@ def main():
         sns.lineplot( data=merged_long_df.query("type=='Medicine'"),x="year",y="Ncr_ratio",color="b")
         plt.title("Medicine related NCR")
 
-        
+        #st.write((list_variables["Med_ncr"].dropna(how="all").index))
         title_container = st.container()
         col1, col2 , col3= st.columns([2,2,2])
         with title_container:
@@ -258,6 +270,8 @@ def main():
                 dataset[var]=to_append
             except Exception as error:
                 st.write("variable ", var, "missing for year ", year_selected)
+        b=dataset[["Med_ncr"]].dropna(how="any",axis=0)
+        st.write(len(b))
         dataset=dataset.query("Users_total >= @min_users")
         low_p,high_p=restrict_range_values
         low_val=dataset[var_percentiles].quantile(low_p/100).item()

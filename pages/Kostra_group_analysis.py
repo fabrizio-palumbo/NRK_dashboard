@@ -36,9 +36,10 @@ def calculate_pvalues(df,type):
                     else:
                         if type=="spearman":
                             pvalues[r][c] = round(spearmanr(tmp[r], tmp[c])[1], 4)
+        st.write(pvalues)
         return pvalues
 
-def plot_correlation_matrix(df2,type,significance=0.1, annotated=False):
+def plot_correlation_matrix(df2,type,significance=0.1, annotated=True):
     fig=plt.figure(figsize=(8,6))
     p_values = calculate_pvalues(df2,type)                     # get p-Value
     mask_sig = np.invert((p_values<significance))    # mask - only get significant corr

@@ -121,7 +121,12 @@ def main():
             data_diff=list_variables[variable_name][ years_to_select].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
             # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)
             sum_diff=data_diff.sum(axis=1)
-
+            st.write("values per 100 of users")
+            summary=pd.DataFrame(columns=["# of kom", "Median of med ncr", "Median of all ncr"])
+            summary["# of kom"]=list_variables["All_ncr"].count()
+            summary["Median of all ncr"]=list_variables["All_ncr"].median(axis=0)
+            summary["Median of med ncr"]=list_variables["Med_ncr"].median(axis=0)
+            st.write(summary)
             f=plt.figure()
             sns.histplot(sum_diff*100)
             plt.title("histogram of average %increase of all municipalities")
@@ -135,13 +140,74 @@ def main():
             l3=sum_diff[(sum_diff>(-t)) & (sum_diff<t)].count()
             sizes = [l1,l2,l3]
             explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
-
+            kom_in_group=pd.DataFrame(columns=labels)
+            kom_in_group['Decreased']=[sum_diff[sum_diff<=-t].index]
+            kom_in_group['Increased']=[sum_diff[sum_diff>=t].index]
+            kom_in_group['Uncertain']=[sum_diff[(sum_diff>(-t)) & (sum_diff<t)].index]
+            #st.write(list_variables["Users_total"])
+            index_in_df_user=[w for w in kom_in_group['Decreased'].item() if w in list_variables["Users_total"].index]
+            st.write("% of norwegian patients with decresed value ")
+            decreased_value_patients=pd.DataFrame(list_variables["Users_total"][years_to_select].loc[index_in_df_user].sum()/list_variables["Users_total"][ years_to_select].sum())
+            decreased_value_patients.columns=["%"]
+            st.write(decreased_value_patients)
+            #st.write((list_variables["Users_total"].loc[index_in_df_user].sum())/(list_variables["Users_total"].sum()))
+            
+            
+            
+            #st.write(kom_in_group)
             fig1, ax1 = plt.subplots()
             ax1.pie(sizes, explode=explode, labels=labels, autopct='%1.1f%%',
                     shadow=True, startangle=90)
             ax1.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
 
             st.pyplot(fig1)
+    extra_var = st.checkbox('second_level_approach')
+    if extra_var:
+        plot_container2 = st.container()
+        col1_1, col2_2 = st.columns([4,4])
+        with plot_container2:
+            with col1_1:
+                extra_variable_name = st.selectbox('Select the extra variable of interest',options= [k for k in list_variables.keys()])     
+            with col2_2: 
+                group = st.selectbox('Select the group to further investigate',options= ['Increased', 'Decreased', 'Uncertain']) 
+            with col1_1:
+                data_diff_extra=list_variables[extra_variable_name][ years_to_select].pct_change(axis=1, fill_method='ffill').replace(np.inf,np.nan)
+                index_in_df=[w for w in kom_in_group[group].item() if w in data_diff_extra.index]
+
+                data_diff_extra=data_diff_extra.loc[index_in_df]
+                # sum_diff=data_diff.loc[b["Cluster #"]==1].mean(axis=1)
+
+                #st.write(data_diff_extra)
+                sum_diff_extra=data_diff_extra.sum(axis=1)
+
+                f2=plt.figure()
+                sns.histplot(sum_diff_extra*100)
+                plt.title("histogram of average %increase of all municipalities")
+                plt.axvline(x=t*100,linewidth=4, color='r')
+                st.pyplot(f2)
+            with col2_2: 
+                labels = ['Increased', 'Decreased', 'Uncertain']
+                st.write("% of norwegian patients with increased sickness in the selected group")
+                sicker_patients=pd.DataFrame(list_variables[extra_variable_name][years_to_select].loc[sum_diff_extra[sum_diff_extra>=t].index].sum()/list_variables["Users_total"][ years_to_select].sum())
+                sicker_patients.columns=["%"]
+                st.write(sicker_patients)
+                #st.write((list_variables[extra_variable_name].sum())/(list_variables["Users_total"].sum()))
+
+                l1_extra=sum_diff_extra[sum_diff_extra>=t].count()
+                l2_extra=sum_diff_extra[sum_diff_extra<=-t].count()
+                l3_extra=sum_diff_extra[(sum_diff_extra>(-t)) & (sum_diff_extra<t)].count()
+                sizes_extra = [l1_extra,l2_extra,l3_extra]
+                explode = (0.1, 0.1, 0.1)  # only "explode" the 2nd slice (i.e. 'Hogs')
+
+                #st.write((list_variables["Users_total"].loc[sum_diff[sum_diff<=t].index].sum())/(list_variables["Users_total"].sum()))
+                #st.write(kom_in_group)
+                fig1_extra, ax1_extra = plt.subplots()
+                ax1_extra.pie(sizes_extra, explode=explode, labels=labels, autopct='%1.1f%%',
+                        shadow=True, startangle=90)
+                ax1_extra.axis('equal')  # Equal aspect ratio ensures that pie is drawn as a circle.
+
+                st.pyplot(fig1_extra)
+
     clustering_approach = st.checkbox('cluster the data')
     if clustering_approach:
         number_of_cluster = st.selectbox('Select how many cluster to detect',options= range(2,11))     

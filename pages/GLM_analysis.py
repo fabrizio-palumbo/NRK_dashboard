@@ -15,7 +15,7 @@ list_variables=st.session_state.variables
 years_list=["2020","2021","2019"]
 def main():   
     year_selected = st.selectbox('Please select the year of interest',options= years_list)     
-    options= [k for k in list_variables.keys()]
+    #options= [k for k in list_variables.keys()]
     variable_regressor = st.selectbox('Select 1 variable to regress',options=["All_ncr","Med_ncr"])     
     min_users= st.select_slider(
     'Select minimum number of patients per kommune',
